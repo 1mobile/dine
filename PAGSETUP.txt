@@ -1,0 +1,38 @@
+ENCODE MUNA LAHAT NG MENUS
+DINE
+//TO TRUNCATE
+	cashout_details
+	cashout_entries
+	ci_sessions
+	item_moves
+	logs
+	read_details
+	reasons
+	rob_files
+	shift_entries
+	shifts
+	trans_adjustment_details - TO - trans_sales_zero_rated
+SET TO 0000001
+	TRANS_TYPES - NEXT REF
+
+NOTE: LAHAT NG TABLE NG DINE COPY TO DINEMAIN PWERA SA MGA TRINANCATE
+
+DINEMAIN
+	//TO TRUNCATE
+		cashout_details
+		cashout_entries
+		ci_sessions
+		item_moves
+		logs
+		read_details
+		reasons
+		rob_files
+		shift_entries
+		shifts
+		trans_adjustment_details - TO - trans_sales_zero_rated
+	SET TO 0000001
+		TRANS_TYPES - NEXT REF
+
+NOTE: PARA TEXT SA BABA NG RECEIPT NA NO OFFICAIL RECEIPT SA 
+	cashier -> print_sales_receipt 
+

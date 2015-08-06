@@ -1,0 +1,51 @@
+<?php
+function printsPage(){
+	$CI =& get_instance();
+	$CI->make->sDivRow();
+		$CI->make->sDivCol();
+			$CI->make->sBox('primary');
+				$CI->make->sBoxHead();
+					$CI->make->boxTitle('Search');
+				$CI->make->eBoxHead();
+				$CI->make->sBoxBody();
+					$CI->make->sForm("reprint/results",array('id'=>'search-form'));
+						$CI->make->sDivRow();
+							$CI->make->sDivCol(4);
+								$CI->make->input('Reference No.','receipt',null,'Search Receipt No. or Order No.',array('class'=>'rOkay'));
+							$CI->make->eDivCol();
+							$CI->make->sDivCol(2);
+								$CI->make->button(fa('fa-search').' Submit',array('style'=>'margin-top:24px;','id'=>'search-btn'),'primary');
+							$CI->make->eDivCol();
+						$CI->make->eDivRow();
+					$CI->make->eForm();
+				$CI->make->eBoxBody();
+			$CI->make->eBox();
+		$CI->make->eDivCol();
+	$CI->make->eDivRow();
+	$CI->make->sDivRow();
+		$CI->make->sDivCol(4);
+			$CI->make->sBox('default',array('class'=>'box-solid'));
+				$CI->make->sBoxHead();
+					$CI->make->boxTitle(fa('fa-list').' Search Results');
+				$CI->make->eBoxHead();
+				$CI->make->sBoxBody();
+					$CI->make->sDiv(array('id'=>'results-div'));
+					$CI->make->eDiv();
+				$CI->make->eBoxBody();
+			$CI->make->eBox();
+		$CI->make->eDivCol();
+		$CI->make->sDivCol(8);
+			$CI->make->sBox('default',array('class'=>'box-solid'));
+				$CI->make->sBoxHead();
+					$CI->make->button(fa('fa-print').' Print',array('id'=>'print-btn','class'=>'pull-right','style'=>'margin-top:10px;margin-right:10px;margin-bottom:10px;'),'success');
+				$CI->make->eBoxHead();
+				$CI->make->sBoxBody(array('class'=>'bg-gray','style'=>'min-height:50px;'));
+					$CI->make->sDiv(array('id'=>'print-div','style'=>'margin:0 auto;position:relative;width:310px;'));
+					$CI->make->eDiv();
+				$CI->make->eBoxBody();
+			$CI->make->eBox();
+		$CI->make->eDivCol();
+	$CI->make->eDivRow();
+	return $CI->make->code();
+}
+?>

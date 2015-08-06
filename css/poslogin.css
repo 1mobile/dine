@@ -1,0 +1,29 @@
+html,body,.container
+{
+    height:100%;
+}
+.container
+{
+    display:table;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+}
+.row{
+    height: 100%;
+    display: table-row;
+}
+.col-md-7{
+    display: table-cell;
+    float: none; /* thanks baxabbit */
+    vertical-align: top;
+    width: 60%;
+}
+.col-md-5{
+    float: none; /* thanks baxxabit */
+    display: table-cell;
+    
+    width: 50%;
+}

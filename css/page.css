@@ -1,0 +1,202 @@
+/* OTHERS */
+  .big-man-input{
+    width:100%;
+    height:45px;
+    font-size:23px;
+    font-weight:bold;
+    text-align:left;
+    box-shadow:none;
+    margin:0 auto;
+  }
+
+.ul-hover-blue li:hover{
+  background-color: #2daebf;
+  color:#fff;
+}
+.div-no-spaces div{
+  margin: 0;
+  padding: 0;
+}
+.div-no-raduis div{
+  -webkit-border-radius: 0px !important;
+  -moz-border-radius: 0px !important;
+  border-radius: 0px !important;
+}
+.vertical-list{
+	margin: 0;
+	padding: 0px 0px;
+	list-style: none;
+}
+.vertical-list li{
+  border-radius: 2px;
+  padding: 10px;
+  background: #f3f4f5;
+  margin-bottom: 2px;
+  border-left: 2px solid #e6e7e8;
+  color: #444;
+}
+.vertical-list .handle {
+  display: inline-block;
+  margin: 0 5px;
+}
+.vertical-list li a {
+  float:right;
+}
+.vertical-list li a.text {
+  float:none;
+  font-weight: bold;
+}
+
+.manager-call-pop div{
+  border-radius: 0;
+}
+.manager-call-pop .modal-body{
+  background-color: #007d9a;
+}
+.manager-call-pop .modal-footer{
+  margin-top:0px;
+  padding: 5px;
+  text-align: center;
+}
+.manager-call-pop .modal-footer div{
+  margin: 0px;
+  padding: 0px;
+}
+.manager-call-pop button.pop-manage,
+.manager-call-pop button.pop-manage:visited{
+  vertical-align:middle;
+  text-align:center;
+  font-size:14px;
+  font-weight:bold;
+  height:50px;
+  width: 200px;
+  cursor:pointer;
+  color:#fff;
+  border: none;
+  background:#222;
+  /*display:inline-block;*/
+  /*padding:5px 10px 6px;*/
+  color:#fff;
+  text-decoration:none;
+  border-radius:0;
+  /*-moz-border-radius:3px;
+  -webkit-border-radius:3px;*/
+  -moz-box-shadow:0 1px 3px rgba(0, 0, 0, 0.5);
+  -webkit-box-shadow:0 1px 3px rgba(0, 0, 0, 0.5);
+  text-shadow:0 -1px 1px rgba(0, 0, 0, 0.1);
+  border-bottom:1px solid rgba(0, 0, 0, 0.25);
+  position:relative; cursor:pointer;
+  box-shadow:0 1px 1px rgba(0, 0, 0, 0.2);
+}
+.manager-call-pop button.pop-manage:hover { background-color:#3B3B3B !important; color:#fff;}
+.manager-call-pop button.pop-manage:active { top:1px;}
+.manager-call-pop button:hover { background-color:#3B3B3B !important; color:#fff;}
+.manager-call-pop button:active { top:1px;}
+.manager-call-pop button.pop-manage-green,
+.manager-call-pop button.pop-manage-green:visited { background-color:#91bd09 !important;}
+.manager-call-pop button.pop-manage-green:hover { background-color:#749a02 !important;}
+.manager-call-pop button.pop-manage-red,
+.manager-call-pop button.pop-manage-red:visited { background-color:#D12027 !important;}
+.manager-call-pop button.pop-manage-red:hover { background-color:#B6151C !important;}
+.manager-call-pop button.double{
+  height: 65px;
+  font-size: 14px;
+}
+/*
+ * Component: Info Box
+ * -------------------
+ */
+.info-box {
+  display: block;
+  min-height: 90px;
+  background: #fff;
+  width: 100%;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+  border-radius: 2px;
+  margin-bottom: 15px;
+}
+.info-box small {
+  font-size: 14px;
+}
+.info-box .progress {
+  background: rgba(0, 0, 0, 0.2);
+  margin: 5px -10px 5px -10px;
+  height: 2px;
+}
+.info-box .progress,
+.info-box .progress .progress-bar {
+  border-radius: 0;
+}
+.info-box .progress .progress-bar {
+  background: #fff;
+}
+.info-box-icon {
+  border-top-left-radius: 2px;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  border-bottom-left-radius: 2px;
+  display: block;
+  float: left;
+  height: 90px;
+  width: 90px;
+  text-align: center;
+  font-size: 45px;
+  line-height: 90px;
+  background: rgba(0, 0, 0, 0.2);
+}
+.info-box-content {
+  padding: 5px 10px;
+  margin-left: 90px;
+}
+.info-box-number {
+  display: block;
+  font-weight: bold;
+  font-size: 18px;
+}
+.progress-description,
+.info-box-text {
+  display: block;
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.info-box-text {
+  text-transform: uppercase;
+}
+.info-box-more {
+  display: block;
+}
+.progress-description {
+  margin: 0;
+}
+/* RTABLE */
+  #rTable-btns{
+    margin-left:10px;margin-right:10px;
+  }
+  .rTable{
+    margin-top:10px;
+  } 
+  .rTable th{
+    font-size: 1.1em;
+    font-weight: 300;
+    background-color: #EEEEEE;
+    border-bottom:solid 3px #999 !important;
+    
+  }
+  .rTable tr.needHover td{
+    cursor: pointer;
+  }
+  .rTable tr.needHover:hover td{
+    background-color: #ddd;
+  }
+  .rTable tr.selected td{
+    background-color: #3C8DBC;
+    color: #fff;
+    font-weight: 500;
+  }
+  .rTable tr.selected:hover td{
+    background-color: #00438A;
+    color: #fff;
+    font-weight: 500;
+  }
