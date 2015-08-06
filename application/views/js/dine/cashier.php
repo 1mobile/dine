@@ -1434,12 +1434,14 @@ $(document).ready(function(){
 				$('.menus-div .title').text(opt.name);
 				$('.menus-div .items-lists').html('');
 				$.post(baseUrl+'cashier/get_menus/'+id,function(data){
+					var div = $('.menus-div .items-lists').append('<div class="row"></div>');
 			 		$.each(data,function(menu_id,opt){
+			 			var sCol = $('<div class="col-md-4"></div>');
 			 			$('<button/>')
-			 			.attr({'id':'menu-'+menu_id,'ref':menu_id,'class':'counter-btn-silver btn btn-default'})
-			 			.css({'margin':'5px','width':'130px'})
+			 			.attr({'id':'menu-'+menu_id,'ref':menu_id,'class':'counter-btn-blue btn btn-block btn-default'})
+			 			// .css({'margin':'5px'})
 			 			.text(opt.name)
-			 			.appendTo('.menus-div .items-lists')
+			 			.appendTo(sCol)
 			 			.click(function(){
 			 				if(opt.free == 1){
 				 				$.callManager({
@@ -1453,7 +1455,9 @@ $(document).ready(function(){
 			 				}
 			 				return false;
 			 			});
+			 			sCol.appendTo(div);
 			 		});
+
 			 		$('.menus-div .items-lists').after('<div id="scrollers-menu"><div class="row"><div class="col-md-6 text-left"><button id="menu-item-scroll-up" class="btn-block counter-btn double btn btn-default "><i class="fa fa-fw fa-chevron-circle-up fa-2x fa-fw"></i></button></div><div class="col-md-6 text-left"><button id="menu-item-scroll-down" class="btn-block counter-btn double btn btn-default "><i class="fa fa-fw fa-chevron-circle-down fa-2x fa-fw"></i></button></div></div></div>');
 			 		$("#menu-item-scroll-down").on("click" ,function(){
 			 		 //    scrolled=scrolled+100;
@@ -1502,19 +1506,24 @@ $(document).ready(function(){
 							var row = $('<div/>').attr({'class':'mod-group','id':'mod-group-'+mod_group_id}).appendTo('.mods-div .mods-lists');
 							$('<h4/>').text(opt.name)
 									  .addClass('text-center receipt')
+									  .css({'margin-bottom':'5px'})
 									  .appendTo('#mod-group-'+mod_group_id);
 							var mandatory = opt.mandatory;
 							var multiple = opt.multiple;
+
+							var div = $('#mod-group-'+mod_group_id).append('<div class="row"></div>');
 							$.each(opt.details,function(mod_id,det){
+								var sCol = $('<div class="col-md-4"></div>');
 								$('<button/>')
-								.attr({'id':'mod-'+mod_id,'ref':mod_id,'class':'counter-btn-silver btn btn-default'})
-								.css({'margin':'5px','width':'130px'})
+								.attr({'id':'mod-'+mod_id,'ref':mod_id,'class':'counter-btn-teal btn btn-block btn-default'})
+								// .css({'margin':'5px','width':'130px'})
 								.text(det.name)
-								.appendTo('#mod-group-'+mod_group_id)
+								.appendTo(sCol)
 								.click(function(){
 									addTransModCart(trans_id,mod_group_id,mod_id,det,id,$(this),trans_det,mandatory,multiple);
 									return false;
 								});
+				 				sCol.appendTo(div);
 				 			});
 				 			$('<hr/>').appendTo('#mod-group-'+mod_group_id);
 				 		});

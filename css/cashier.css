@@ -276,11 +276,11 @@
   }
   #clock .clock-bottom{
     padding:10px;
-	margin: 0px;
+  margin: 0px;
   }
   #clock .clock-center{
     height: 469px;
-	padding:0;
+  padding:0;
     margin:0;
     padding-bottom: 20px;
     border-radius: 0;
@@ -396,30 +396,30 @@
   }
 /* CUSTOMERS */
  #customer .customer-left{
-	padding:20px;
+  padding:20px;
     border-radius:3px;
     -moz-border-radius:3px;
     -webkit-border-radius:3px;
  }
   #customer .customer-center{
-	padding:20px;
-	border-radius:3px;
-	-moz-border-radius:3px;
-	-webkit-border-radius:3px;
+  padding:20px;
+  border-radius:3px;
+  -moz-border-radius:3px;
+  -webkit-border-radius:3px;
  }
  #customer .customer-left{
     background-color: #d12027;
-	margin:0px;margin-left:50px;margin-right:10px;
+  margin:0px;margin-left:50px;margin-right:10px;
   }
   #customer .customer-center{
     background-color: #F4EDE0;
   }
   #customer .customer-center{
     height: 480px;
-	padding:0;
+  padding:0;
     /* margin:0; */
-	margin:0px;margin-left:0px;margin-right:0px;
-	width: 100%; overflow-x:scroll; overflow-y:scroll;
+  margin:0px;margin-left:0px;margin-right:0px;
+  width: 100%; overflow-x:scroll; overflow-y:scroll;
     padding-bottom: 20px;
     border-radius: 0;
   }
@@ -494,7 +494,7 @@
   #counter button:visited{
     vertical-align:middle;
     text-align:center;
-    font-size:14px;
+    font-size:12px;
     font-weight:bold;
     height:50px;
     cursor:pointer;
@@ -536,9 +536,12 @@
   #counter button.counter-btn-red-gray,
   #counter button.counter-btn-red-gray:visited { background-color:#69574e !important;}
   #counter button.counter-btn-red-gray:hover { background-color:#55453e !important;}
+  #counter button.counter-btn-blue,
+  #counter button.counter-btn-blue:visited { background-color:#20877F !important;}
+  #counter button.counter-btn-blue:hover { background-color:#015D56 !important;}
   #counter button.double{
     height: 63px;
-    font-size: 14px;
+    font-size: 12px;
   }
   #counter .counter-center{
     padding:10px;
@@ -972,9 +975,9 @@
     font-size: 14px;
   }
   /* MANAGER - manager end of day  */
-	.manager-div-center{
-		margin: 10px;
-	}
+  .manager-div-center{
+    margin: 10px;
+  }
   /* MANAGER - manager settings  */
   /* #manager-settings{
     width: 100%; margin:10px;margin-left:10px;margin-right:10px;
@@ -982,31 +985,31 @@
 
   #manager-settings .manager-settings-btns,
   #manager-settings .manager-settings-center{
-	 padding:10px;
+   padding:10px;
     border-radius:3px;
     -moz-border-radius:3px;
     -webkit-border-radius:3px;
   }
   #manager-settings .manager-settings-btns{
-	 background-color: #015D56;
-	 margin-left:10px;
-	 margin-right:10px;
-	 padding-top:10px;
-	 padding-bottom:10px;
+   background-color: #015D56;
+   margin-left:10px;
+   margin-right:10px;
+   padding-top:10px;
+   padding-bottom:10px;
   }
   #manager-settings .manager-settings-center{
-	background-color: #F4EDE0;
-	height: 500px;
-	padding:0;
+  background-color: #F4EDE0;
+  height: 500px;
+  padding:0;
     margin:0;
-	margin-left:10px;
-	margin-right:10px;
+  margin-left:10px;
+  margin-right:10px;
     padding-bottom: 20px;
     /* border-radius: 0; */
-	padding-right:15px;
+  padding-right:15px;
     padding-left:15px;
-	border-bottom-right-radius:10px;
-	border-bottom-left-radius:10px;
+  border-bottom-right-radius:10px;
+  border-bottom-left-radius:10px;
   }
   #manager-settings button,
   #manager-settings button:visited{
@@ -1078,28 +1081,28 @@
 
   /* GIFT CARDS CASHIER */
   #gc-cashier{
-	/* margin:20px;margin-left:40px;margin-right:40px; */
+  /* margin:20px;margin-left:40px;margin-right:40px; */
   }
   #gc-cashier .gc-cashier-left,
   #gc-cashier .gc-cashier-center{
-	padding:20px;
-	border-radius:3px;
-	-moz-border-radius:3px;
-	-webkit-border-radius:3px;
+  padding:20px;
+  border-radius:3px;
+  -moz-border-radius:3px;
+  -webkit-border-radius:3px;
  }
  #gc-cashier .gc-cashier-left{
     background-color: #d12027;
-	margin:0px;margin-left:50px;margin-right:10px;
+  margin:0px;margin-left:50px;margin-right:10px;
   }
   #gc-cashier .gc-cashier-center{
     background-color: #F4EDE0;
   }
   #gc-cashier .gc-cashier-center{
     height: 480px;
-	padding:0;
+  padding:0;
     /* margin:0; */
-	margin:0px;margin-left:0px;margin-right:0px;
-	width: 100%; overflow-x:scroll; overflow-y:scroll;
+  margin:0px;margin-left:0px;margin-right:0px;
+  width: 100%; overflow-x:scroll; overflow-y:scroll;
     padding-bottom: 20px;
     border-radius: 0;
   }
@@ -1377,11 +1380,11 @@
 /* THEME CUSTOMIZE */
   .wrapper {
     background-color: #444;
-  	background: url(img/wood.png) top left repeat;
-  	/*background-repeat:repeat-y;*/
-  	background-position:center center;
-  	background-attachment:scroll;
-  	/*background-size:100% 100%;*/
+    background: url(img/wood.png) top left repeat;
+    /*background-repeat:repeat-y;*/
+    background-position:center center;
+    background-attachment:scroll;
+    /*background-size:100% 100%;*/
   }
   .skin-red .navbar .dropdown-menu > li > a {
     color: #444444;
@@ -1569,34 +1572,34 @@
 /* MANAGER - manager orders */
   #manager-orders .manager-orders-btns,
   #manager-orders .manager-orders-center {
-	padding:10px;
+  padding:10px;
     border-radius:3px;
     -moz-border-radius:3px;
     -webkit-border-radius:3px;
   }
    #manager-orders .manager-orders-btns{
-	 background-color: #015D56;
-	 margin-left:10px;
-	 margin-right:10px;
-	 padding-top:10px;
-	 padding-bottom:10px;
+   background-color: #015D56;
+   margin-left:10px;
+   margin-right:10px;
+   padding-top:10px;
+   padding-bottom:10px;
   }
-	.open-all-btns div {
-  	margin: 0;
-  	padding: 0;
+  .open-all-btns div {
+    margin: 0;
+    padding: 0;
   }
   /*   #manager-orders .manager-orders-center{
-	background-color: #F4EDE0;
-	height: 420px;
-	padding:0;
+  background-color: #F4EDE0;
+  height: 420px;
+  padding:0;
     margin:0;
-	margin-left:10px;
-	margin-right:10px;
+  margin-left:10px;
+  margin-right:10px;
     padding-bottom: 20px;
-	padding-right:15px;
+  padding-right:15px;
     padding-left:15px;
-	border-bottom-right-radius:10px;
-	border-bottom-left-radius:10px;
+  border-bottom-right-radius:10px;
+  border-bottom-left-radius:10px;
   } */
   #manager-orders button,
   #manager-orders button:visited{
@@ -1662,11 +1665,11 @@
   }
 
   .manager-orders-list div{
-	background-color: #ffffff;
+  background-color: #ffffff;
   }
 
   .sel-row{
-	cursor:pointer;
+  cursor:pointer;
   }
 
   div.selected div{
