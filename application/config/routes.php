@@ -45,6 +45,8 @@ $route['404_override'] = '';
 $route['login'] = "site/login";
 
 # MALL #
+	$route['araneta'] = "dine/araneta";
+	$route['araneta/(:any)'] = "dine/araneta/$1";
 	$route['ortigas'] = "dine/ortigas";
 	$route['ortigas/(:any)'] = "dine/ortigas/$1";
 	$route['robinsons'] = "dine/robinsons";

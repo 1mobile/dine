@@ -43,7 +43,7 @@ function managerPage(){
 				$CI->make->sDivCol(12,'left',0,array('class'=>'manager-btns'));
 					$buttons = array("cash-drawer"	=> fa('fa-money fa-lg fa-fw')."<br> CASH DRAWER",
 									 "end-of-day"	=> fa('fa-clock-o fa-lg fa-fw')."<br> END OF DAY",
-									 // "report"	=> fa('fa-file-text fa-lg fa-fw')."<br> REPORTS",
+									 "report"	=> fa('fa-file-text fa-lg fa-fw')."<br> REPORTS",
 									 // "order"	=> fa('fa-pencil-square fa-lg fa-fw')."<br> ORDERS",
 									 // "cash-drop"	=> fa('fa-money fa-lg fa-fw')."<br> CASH DROPS",
 									 // "system"	=> fa('fa-gear fa-lg fa-fw')."<br> SYSTEM",
@@ -52,7 +52,7 @@ function managerPage(){
 									 );
 					$CI->make->sDivRow();
 					foreach ($buttons as $id => $text) {
-							$CI->make->sDivCol(4,'left',0,array("style"=>'margin-bottom:0;'));
+							$CI->make->sDivCol(3,'left',0,array("style"=>'margin-bottom:0;'));
 								$CI->make->button($text,array('id'=>$id.'-btn','class'=>'btn-block manager-btn-red double'));
 							$CI->make->eDivCol();
 					}
@@ -60,9 +60,9 @@ function managerPage(){
 						// // $CI->make->sDivCol(2,'left',0,array("style"=>'margin-bottom:10px;'));
 						// 	$CI->make->button(fa('fa-gear fa-lg fa-fw')."<br> SYSTEM",array('id'=>'system-btn','class'=>'btn-block manager-btn-orange double'));
 						// $CI->make->eDivCol();
-						$off=3;
+						$off=2;
 						if(MALL_ENABLED){
-							$off=2;
+							$off=1;
 						}
 						$CI->make->sDivCol($off,'left',0,array("style"=>'margin-bottom:0;'));
 							$CI->make->button(fa('fa-print fa-lg fa-fw')."<br> Prints",array('id'=>'printings-btn','class'=>'btn-block manager-btn-orange double'));

@@ -155,7 +155,8 @@ $(document).ready(function(){
 			var type = $('.order-view-list').attr('type');
 			var status = $('.order-view-list').attr('status');
 			$.callManager({
-				success : function(){
+				success : function(manager){
+					var type = $('.order-view-list').attr('approver',manager.manager_id);
 					loadDivs('reasons');
 				}
 			});				
@@ -164,6 +165,7 @@ $(document).ready(function(){
 		$(".reason-btns").click(function(){
 			var id = $('.order-view-list').attr('ref');
 			var type = $('.order-view-list').attr('type');
+			var approver = $('.order-view-list').attr('approver');
 
 			var prev = $('#now-btn').attr('type');
 			var old = 0;
@@ -173,7 +175,7 @@ $(document).ready(function(){
 			var reason = $(this).text();
 			var btn = $(this);
 			btn.goLoad();
-			formData = 'reason='+reason;
+			formData = 'reason='+reason+'&approver='+approver;
 			$.post(baseUrl+'cashier/void_order/'+id+'/'+old,formData,function(data){
 				if(data.error == ""){
 					// $.post(baseUrl+'cashier/print_sales_receipt/'+id,function(data){
@@ -185,8 +187,9 @@ $(document).ready(function(){
 				else{
 					rMsg(data.error,'error');
 				}
-			// });
 			},'json');
+			// alert(data);
+			// });
 			return false;
 		});
 		$(".cancel-reason-btn").click(function(){
@@ -1342,7 +1345,7 @@ $(document).ready(function(){
 						}
 					}
 		 			$('<button/>')
-		 			.attr({'id':'menu-cat-'+cat_id,'ref':cat_id,'class':'btn-block category-btns counter-btn-silver double btn btn-default'})
+		 			.attr({'id':'menu-cat-'+cat_id,'ref':cat_id,'class':'btn-block category-btns counter-btn-blue double btn btn-default'})
 		 			.text(val.name)
 		 			.appendTo('.menu-cat-container')
 		 			.click(function(){
@@ -1372,7 +1375,7 @@ $(document).ready(function(){
 						loadsDiv('retail');
 					}
 		 			$('<button/>')
-		 			.attr({'id':'item-cat-'+cat_id,'ref':cat_id,'class':'btn-block category-btns counter-btn-silver double btn btn-default'})
+		 			.attr({'id':'item-cat-'+cat_id,'ref':cat_id,'class':'btn-block category-btns counter-btn-blue double btn btn-default'})
 		 			.text(val.name)
 		 			.appendTo('.menu-cat-container')
 		 			.click(function(){
@@ -1438,7 +1441,7 @@ $(document).ready(function(){
 			 		$.each(data,function(menu_id,opt){
 			 			var sCol = $('<div class="col-md-4"></div>');
 			 			$('<button/>')
-			 			.attr({'id':'menu-'+menu_id,'ref':menu_id,'class':'counter-btn-blue btn btn-block btn-default'})
+			 			.attr({'id':'menu-'+menu_id,'ref':menu_id,'class':'counter-btn-silver btn btn-block btn-default'})
 			 			// .css({'margin':'5px'})
 			 			.text(opt.name)
 			 			.appendTo(sCol)
@@ -1515,7 +1518,7 @@ $(document).ready(function(){
 							$.each(opt.details,function(mod_id,det){
 								var sCol = $('<div class="col-md-4"></div>');
 								$('<button/>')
-								.attr({'id':'mod-'+mod_id,'ref':mod_id,'class':'counter-btn-teal btn btn-block btn-default'})
+								.attr({'id':'mod-'+mod_id,'ref':mod_id,'class':'counter-btn-silver btn btn-block btn-default'})
 								// .css({'margin':'5px','width':'130px'})
 								.text(det.name)
 								.appendTo(sCol)

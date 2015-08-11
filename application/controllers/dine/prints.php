@@ -518,12 +518,15 @@ class Prints extends CI_Controller {
             $taxable = ($net_no_adds - ($tax + $no_tax)); 
             $print_str .= append_chars(substrwords('Taxable',18,""),"right",23," ")
                          .append_chars(numInt(($taxable)),"left",13," ")."\r\n";
+            $total_net = $taxable + $no_tax + $zero_rated + $tax;
             $print_str .= append_chars(substrwords('NonTaxable',18,""),"right",23," ")
                          .append_chars(numInt(($no_tax)),"left",13," ")."\r\n";
             $print_str .= append_chars(substrwords('ZeroRated',13,""),"right",23," ")
                          .append_chars(numInt(($zero_rated)),"left",13," ")."\r\n";
             $print_str .= append_chars(substrwords('VAT Amount',18,""),"right",23," ")
                                      .append_chars(numInt(($tax)),"left",13," ")."\r\n";   
+            $print_str .= append_chars(substrwords('Total',18,""),"right",23," ")
+                                     .append_chars(numInt(($total_net)),"left",13," ")."\r\n";   
 
             $print_str .= "\r\n";
             $print_str .= append_chars(substrwords('Invoice Start: ',18,""),"right",18," ").align_center('',5," ")
@@ -632,6 +635,82 @@ class Prints extends CI_Controller {
             $print_str .= "======================================"."\r\n";
 
             $this->do_print($print_str,$asJson);
+        }
+        public function cash_count_rep($asJson=false){
+            $print_str = $this->print_header();
+            $user = $this->session->userdata('user');
+            $time = $this->site_model->get_db_now();
+            $post = $this->set_post();
+                        
+            $title_name = "Cash Count";
+            $print_str .= align_center($title_name,38," ")."\r\n";
+            $print_str .= align_center("TERMINAL ".$post['terminal'],38," ")."\r\n";
+            $print_str .= append_chars('Printed On','right',11," ").append_chars(": ".date2SqlDateTime($time),'right',19," ")."\r\n";
+            $print_str .= append_chars('Printed BY','right',11," ").append_chars(": ".$user['full_name'],'right',19," ")."\r\n";
+            $print_str .= "======================================"."\r\n";
+            if($post['employee'] != "All")
+                $print_str .= align_center($post['employee'],38," ")."\r\n";
+            $shit_id = $post['shift_id'];
+            $totals = $this->shift_entries($shit_id);
+            $cashout_id = $this->shift_cashout($shit_id);
+            $print_str = $this->print_cashout_details($print_str,$totals,$cashout_id);
+
+            // echo "<pre style='background-color:#fff'>$print_str</pre>";
+            $this->do_print($print_str,$asJson); 
+        }
+        public function print_cashout_details($print_str="",$totals,$cashout_id){
+            $cashout_header = $this->cashier_model->get_cashout_header($cashout_id); // returns row
+            $cashout_details = $this->cashier_model->get_cashout_details($cashout_id); // returns rows array
+            
+            $sum_deps = $sum_withs = 0;
+
+            /* Cash Deposits */
+            $print_str .= "Cash Deposits\r\n";
+            foreach ($totals['total_deps'] as $k => $dep) {
+                $print_str .= append_chars("   ".($k+1),'right',8," ").append_chars(date('H:i:s',strtotime($dep->trans_date)),"right",13," ")
+                    .append_chars(number_format($dep->amount,2),"left",15," ")."\r\n";
+                $sum_deps += $dep->amount;
+            }
+            if ($sum_deps > 0)
+                $print_str .= append_chars("------------","left",36," ")."\r\n";
+            $print_str .= append_chars("Total Cash Deposits","right",21," ")
+                .append_chars(number_format($sum_deps,2),"left",15," ")."\r\n\r\n";
+
+            /* Cash Withdrawals */
+            $print_str .= "Cash Withdrawals\r\n";
+            foreach ($totals['total_withs'] as $k => $with) {
+                $print_str .= append_chars("   ".($k+1)." ".date('H:i:s',strtotime($with->trans_date)),"right",21," ")
+                    .append_chars(number_format(abs($with->amount),2),"left",15," ")."\r\n";
+                $sum_withs += abs($with->amount);
+            }
+            if ($sum_withs > 0)
+                $print_str .= append_chars("------------","left",36," ")."\r\n";
+            $print_str .= append_chars("Total Cash Withdrawals","right",25," ")
+                .append_chars(number_format($sum_withs,2),"left",11," ")."\r\n\r\n";
+
+
+            /* Drawer */
+            $print_str .= append_chars("Expected Drawer amount","right",25," ").append_chars(number_format($cashout_header->drawer_amount,2),"left",11," ")."\r\n";
+            $print_str .= append_chars("Actual Drawer amount","right",25," ").append_chars(number_format($cashout_header->count_amount,2),"left",11," ")."\r\n";
+            $print_str .= append_chars("-------------","right",36," ")."\r\n";
+            $print_str .= append_chars("Variance","right",25," ").append_chars(number_format(abs($cashout_header->drawer_amount - $cashout_header->count_amount),2),"left",11," ")."\r\n";
+
+
+            /* Cashout Details */
+            $print_str .= "\r\nCashout Breakdown\r\n";
+            foreach ($cashout_details as $value) {
+                if (!empty($value->denomination))
+                    $mid = $value->denomination." X ".($value->total/$value->denomination);
+                elseif (!empty($value->reference))
+                    $mid = $value->reference." ";
+                else $mid = "";
+
+                $print_str .= append_chars("[".ucwords($value->type)."] ".$mid,"right",21," ").
+                    append_chars(number_format($value->total,2),"left",15," ")."\r\n";
+            }
+
+            $print_str .= "\r\n".append_chars("","right",36,"-");
+            return $print_str;
         }
         public function do_print($print_str=null,$asJson=false){
             if (!$asJson) {
@@ -786,7 +865,7 @@ class Prints extends CI_Controller {
             }
             $terminal = TERMINAL_ID;
             $args['trans_sales.terminal_id'] = $terminal;
-            return array('args'=>$args,'from'=>$from,'to'=>$to,'date'=>$date,'terminal'=>$terminal,"employee"=>$emp,"title"=>$title);            
+            return array('args'=>$args,'from'=>$from,'to'=>$to,'date'=>$date,'terminal'=>$terminal,"employee"=>$emp,"title"=>$title,"shift_id"=>$shift);            
         }   
         public function search_current(){
             $today = sql2Date($this->site_model->get_db_now());
@@ -1379,5 +1458,82 @@ class Prints extends CI_Controller {
             }
             // echo var_dump($old_grand_total);
             return array('old_grand_total'=>$old_grand_total,'ctr'=>$ctr);
+        }
+        public function old_grand_net_total($date=""){
+            $this->db = $this->load->database('main', TRUE);
+            $old_grand_total = 0;
+            $ctr = 0;
+            $args['trans_sales.datetime < '] = $date;
+            $args['trans_sales.type_id'] = SALES_TRANS;
+            $args['trans_sales.inactive'] = 0;
+            $args["trans_sales.trans_ref  IS NOT NULL"] = array('use'=>'where','val'=>null,'third'=>false);
+            $args['trans_sales.terminal_id'] = TERMINAL_ID;
+            $result = $this->site_model->get_tbl('trans_sales',$args,array(),null,true,'sum(trans_sales.total_amount) as total');
+            if(count($result) > 0){
+                $old_grand_total += $result[0]->total;
+            }
+            $cargs = array('read_type'=>Z_READ,'DATE(read_details.read_date) <= '=>date2Sql($date));
+            if($this->site_model->db->database == "dinemain")
+                $cargs['read_details.pos_id'] = TERMINAL_ID;
+            
+            $ctrresult = $this->site_model->get_tbl('read_details',$cargs,array(),null,true,'id','read_date',null);
+            foreach ($ctrresult as $res) {
+                $ctr++;
+            }
+            return array('old_grand_total'=>$old_grand_total,'ctr'=>$ctr);
+        }
+        public function shift_cashout($shift_id=""){
+            $cashout_id = "";
+            $shift = $this->site_model->get_tbl('shifts',array('shift_id'=>$shift_id));
+            if(count($shift) > 0){
+                $sh = $shift[0];
+                if($sh->cashout_id != ""){
+                    $cashout_id = $sh->cashout_id;
+                }
+            }
+            ####
+            return $cashout_id;
+        }
+        public function shift_entries($shift_id=""){
+            $this->load->model('dine/clock_model');
+            
+            $shift = null;
+            $total_drops = 0;
+            $total_deps = $total_withs = array();
+            $total_sales = 0;
+            $overAllTotal = 0;
+            
+            $entries = $this->clock_model->get_shift_entries(null,array("shift_entries.shift_id"=>$shift_id));
+            if(count($entries) > 0){
+                foreach ($entries as $res) {
+                    $total_drops += $res->amount;
+
+                    if ($res->amount > 0)
+                        $total_deps[] = $res;
+                    else
+                        $total_withs[] = $res;
+                }
+                $overAllTotal += $total_drops;
+            }
+            $args = array(
+                "trans_sales.type_id"=>SALES_TRANS,
+                "trans_sales.shift_id"=>$shift_id,
+                "trans_sales.inactive"=>0
+            );
+            $args["trans_sales.trans_ref  IS NOT NULL"] = array('use'=>'where','val'=>null,'third'=>false);
+            $trans = $this->cashier_model->get_trans_sales(null,$args);
+            if(count($trans) > 0){
+                foreach ($trans as $res) {
+                    $total_sales += $res->total_paid;
+                }
+                $overAllTotal += $total_sales;
+            }
+            return array(
+                'total_drops'=>$total_drops,
+                'total_deps'=>$total_deps,
+                'total_withs'=>$total_withs,
+                'total_sales'=>$total_sales,
+                'overAllTotal'=>$overAllTotal
+            );
         }
 }

@@ -45,11 +45,13 @@ define('ORDERING_STATION',		false);
 define('ROBINSON',				false);
 define('MALL_ENABLED',			true);
 // define('MALL',					'robinsons');
-define('MALL',					'ortigas');
+// define('MALL',					'ortigas');
+define('MALL',					'araneta');
 
 
 define('BEVERAGE_ID'			,	'2');
 
+define('SERVICE_CHARGE_ID'		,	'1');
 
 
 define('BRANCH_CODE',			'POINTONE0001');

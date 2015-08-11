@@ -394,7 +394,6 @@ class Endofday extends Cashier {
             update_load(70);
             sleep(1);
             if(MALL_ENABLED){
-
                 if(MALL == "robinsons"){
                     $rob = $this->send_to_rob($z_read_id,$increment);
                     if($rob['error'] == ""){
@@ -407,14 +406,17 @@ class Endofday extends Cashier {
                 else if(MALL == "ortigas"){
                     $this->ortigas_file($z_read_id);
                 }
+                else if(MALL == "araneta"){
+                    $this->araneta_file($z_read_id);
+                    $last_date = date("Y-m-t", strtotime($read_date));
+                    $now_date = date("Y-m-d", strtotime($read_date));
+                    if($last_date == $now_date){
+                        $this->araneta_month_file($now_date);
+                    }
+                }
 
             }
-            
-
             update_load(100);
             // echo var_dump($rob);
-
-
-
         }    
 }

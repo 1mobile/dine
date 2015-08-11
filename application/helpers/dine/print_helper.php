@@ -95,6 +95,7 @@ function shiftsPage($today=null){
 										$CI->make->eDiv();
 										$buttons = array(
 														 "system_sales_rep"	=> "XREAD",
+														 "cash_count_rep"	=> "Cash Count",
 														 "menu_sales_rep"	=> "Menu Item Sales",
 														 "void_sales_rep"	=> "Void Sales",
 														 // "daily_sales_rep"	=> "Daily Sales",

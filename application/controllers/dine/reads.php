@@ -1,6 +1,6 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
-
-class Reads extends CI_Controller {
+include_once (dirname(__FILE__) . "/prints.php");
+class Reads extends Prints {
 	public function __construct(){
 		parent::__construct();
 		$this->load->model('dine/cashier_model');
@@ -1580,6 +1580,245 @@ class Reads extends CI_Controller {
             fwrite($fp,$print_str);
             fclose($fp);                    
         }
+        public function araneta_file($zread_id=null){
+            $araneta_db = $this->site_model->get_tbl('araneta');
+            $araneta = $araneta_db[0];
+            $months = array('01'=>'1','02'=>'2','03'=>'3','04'=>'4','05'=>'5','06'=>'6','07'=>'7','08'=>'8','09'=>'9','10'=>'A','11'=>'B','12'=>'C');
+            // S = summary file , L = for transaaction list , C for monthly file
+            $print_str  = "";
+            $lastRead = $this->cashier_model->get_z_read($zread_id);
+            $zread = array();
+            if(count($lastRead) > 0){
+                foreach ($lastRead as $res) {
+                    $zread = array(
+                        'from' => $res->scope_from,
+                        'to'   => $res->scope_to,
+                        'old_gt_amnt' => $res->old_total,
+                        'grand_total' => $res->grand_total,
+                        'read_date' => $res->read_date,
+                        'id' => $res->id,
+                        'user_id'=>$res->user_id
+                    );
+                    $read_date = $res->read_date;
+                }           
+            }
+            $user = $this->session->userdata('user');
+            $time = $this->site_model->get_db_now();
+            
+            $args['trans_sales.datetime >= '] = $zread['from'];             
+            $args['trans_sales.datetime <= '] = $zread['to'];             
+            $trans = $this->trans_sales($args);
+            #######################
+            ## DAILY 
+                $file = $araneta->lessee_name;
+                $this->araneta_generate_daily($file,$zread,$trans,$araneta);
+            #######################
+            ## TRANS LIST 
+                $file = $araneta->lessee_name;
+                $this->araneta_generate_list($file,$zread,$trans,$araneta);
+        }
+        public function araneta_generate_list($file,$zread,$trans,$araneta){
+            $print_str = "";
+            $year = date('Y',strtotime($zread['read_date']));
+            $month = date('M',strtotime($zread['read_date']));
+            $m = date('m',strtotime($zread['read_date']));
+            $d = date('d',strtotime($zread['read_date']));
+            $mo = array('01'=>'1','02'=>'2','03'=>'3','04'=>'4','05'=>'5','06'=>'6','07'=>'7','08'=>'8','09'=>'9','10'=>'A','11'=>'B','12'=>'C');
+            if (!file_exists("araneta_files/trans_list/".$year."/".$month."/")) {   
+                mkdir("araneta_files/trans_list/".$year."/".$month, 0777, true);
+            }
+            $filename = "araneta_files/trans_list/".$year."/".$month."/".$file."L.".$mo[$m].$d; 
+            $curr = false;
+            $sales = $trans['sales'];
+            $settled = $trans['sales']['settled']['orders'];
+            foreach ($settled as $sales_id => $set){
+                $print_str .= $araneta->space_code." ";
+                $print_str .= $araneta->lessee_no." ";
+                $print_str .= date('m/d/y',strtotime($set->datetime))." ";
+                $print_str .= date('H:i:s',strtotime($set->datetime))." ";
+                $print_str .= $sales_id." ";
+                $print_str .= $set->trans_ref." ";
+                $print_str .= TERMINAL_ID." ";
+                $print_str .= numInt(0)." ";#GROSS
+                $trans_discounts = $this->discounts_sales($sales_id,$curr);
+                $discounts = $trans_discounts['total']; 
+                $print_str .= numInt($discounts)." ";
+                $print_str .= numInt(0)." ";#VOID
+                $print_str .= numInt(0)." ";#REFUND
+                $print_str .= numInt(0)." ";#ADJ
+                $trans_tax = $this->tax_sales($sales_id,$curr);
+                $tax = $trans_tax['total'];
+                $print_str .= numInt($tax)." ";
+                
+                $trans_local_tax = $this->local_tax_sales($sales_id,$curr);
+                $local_tax = $trans_local_tax['total']; 
+                $trans_charges = $this->charges_sales($sales_id,$curr);
+                $charges_types = $trans_charges['types'];
+                $charges = $trans_charges['total']; 
+                $sc = 0;
+                $oc = $local_tax;
+                foreach ($charges_types as $id => $row) {
+                    if($id == SERVICE_CHARGE_ID){
+                        $sc += $row['amount'];
+                    }
+                    else{
+                        $oc += $row['amount'];
+                    }
+                }
+                $print_str .= numInt($oc)." ";
+                $print_str .= numInt($sc)." ";
+                $trans_no_tax = $this->no_tax_sales($sales_id,$curr);
+                $trans_zero_rated = $this->zero_rated_sales($sales_id,$curr);
+                $no_tax = $trans_no_tax['total'];
+                $zero_rated = $trans_zero_rated['total'];
+                $no_tax -= $zero_rated;
+
+                $net_no_adds = $set->total_amount-$charges-$local_tax;
+                $taxable = ($net_no_adds - ($tax + $no_tax)); 
+
+                $print_str .= numInt($taxable)." ";
+                $print_str .= numInt($no_tax)." ";
+                $print_str .= numInt($set->total_amount)." ";
+                $print_str .= numInt($charges)." ";
+                $print_str .= numInt($set->total_amount)." ";
+                $print_str .= "\r\n";
+            }
+            // echo "<pre>".$print_str."</pre>";
+            $fp = fopen($filename, "w+");
+            fwrite($fp,$print_str);
+            fclose($fp);
+        }    
+        public function araneta_generate_daily($file,$zread,$trans,$araneta,$monthtype=false){
+            $print_str = "";
+            $mo = array('01'=>'1','02'=>'2','03'=>'3','04'=>'4','05'=>'5','06'=>'6','07'=>'7','08'=>'8','09'=>'9','10'=>'A','11'=>'B','12'=>'C');
+            $year = date('Y',strtotime($zread['read_date']));
+            $month = date('M',strtotime($zread['read_date']));
+            $m = date('m',strtotime($zread['read_date']));
+            $d = date('d',strtotime($zread['read_date']));
+            if(!$monthtype){
+                if (!file_exists("araneta_files/daily/".$year."/".$month."/")) {   
+                    mkdir("araneta_files/daily/".$year."/".$month, 0777, true);
+                }
+                $filename = "araneta_files/daily/".$year."/".$month."/".$file."S.".$mo[$m].$d; 
+            }
+            else{
+                if (!file_exists("araneta_files/monthly/".$year."/".$month."/")) {   
+                    mkdir("araneta_files/monthly/".$year."/".$month, 0777, true);
+                }
+                $filename = "araneta_files/monthly/".$year."/".$month."/".$file."C.".$mo[$m]."00";    
+            }
+
+            $curr = false;
+            $old_gt = $this->old_grand_net_total($zread['from']);
+            $new_gt = $old_gt['old_grand_total'] + $trans['net'];
+            $sales = $trans['sales'];
+            $trans_discounts = $this->discounts_sales($sales['settled']['ids'],$curr);
+            $discounts = $trans_discounts['total']; 
+            $total_void = 0;
+            if(isset($trans['sales']['void']['orders']) && count($trans['sales']['void']['orders']) > 0){
+                $void = $trans['sales']['void']['orders'];
+                if(count($void) > 0){
+                    foreach ($void as $v) {
+                        $total_void += $v->total_amount;
+                    }                
+                } 
+            }
+            $trans_tax = $this->tax_sales($sales['settled']['ids'],$curr);
+            $tax = $trans_tax['total'];
+
+            $trans_local_tax = $this->local_tax_sales($sales['settled']['ids'],$curr);
+            $local_tax = $trans_local_tax['total']; 
+            $trans_charges = $this->charges_sales($sales['settled']['ids'],$curr);
+            $charges_types = $trans_charges['types'];
+            $charges = $trans_charges['total']; 
+            $sc = 0;
+            $oc = $local_tax;
+            foreach ($charges_types as $id => $row) {
+                if($id == SERVICE_CHARGE_ID){
+                    $sc += $row['amount'];
+                }
+                else{
+                    $oc += $row['amount'];
+                }
+            }
+            $trans_no_tax = $this->no_tax_sales($sales['settled']['ids'],$curr);
+            $trans_zero_rated = $this->zero_rated_sales($sales['settled']['ids'],$curr);
+            $no_tax = $trans_no_tax['total'];
+            $zero_rated = $trans_zero_rated['total'];
+            $no_tax -= $zero_rated;
+
+            $net_no_adds = $trans['net']-$charges-$local_tax;
+            $taxable = ($net_no_adds - ($tax + $no_tax)); 
+            #########################
+            #### GENERATE TEXT FILE
+                $print_str .= $araneta->space_code." ";
+                $print_str .= $araneta->lessee_no." ";
+                $print_str .= numInt($new_gt)." ";
+                $print_str .= numInt($old_gt['old_grand_total'])." ";
+                $print_str .= numInt($trans['net'])." ";
+                $print_str .= numInt($discounts)." ";
+                $print_str .= numInt(0)." ";
+                $print_str .= numInt($total_void)." ";
+                $print_str .= numInt(0)." ";
+                $print_str .= numInt($trans['net'] + $total_void)." ";#GROSS
+                $print_str .= numInt($tax)." ";
+                $print_str .= numInt($oc)." ";
+                $print_str .= numInt($sc)." ";
+                $print_str .= numInt($taxable)." ";
+                $print_str .= numInt($no_tax)." ";
+                $print_str .= numInt($charges+$local_tax)." ";
+                $print_str .= numInt($net_no_adds)." ";
+                
+                $first_ref = iSetObj($trans['first_ref'],'trans_ref',$trans['first_ref']);
+                $last_ref = iSetObj($trans['last_ref'],'trans_ref',$trans['last_ref']);
+
+                $print_str .= $first_ref." ";
+                $print_str .= $last_ref." ";
+                $print_str .= $trans['ref_count']." ";
+                $print_str .= "0 ";
+                $print_str .= $old_gt['ctr']." ";
+                $print_str .= date('m/d/y',strtotime($zread['read_date']))." ";
+                $print_str .= date('H:i:s',strtotime($zread['from']))." ";
+                $print_str .= date('H:i:s',strtotime($zread['to']))." ";
+                for ($i=0; $i <= 10; $i++) { 
+                    $print_str .= numInt(0)." ";
+                }
+            $fp = fopen($filename, "w+");
+            fwrite($fp,$print_str);
+            fclose($fp); 
+        }
+        public function araneta_month_file($date=null){
+            $araneta_db = $this->site_model->get_tbl('araneta');
+            $araneta = $araneta_db[0];
+            $months = array('01'=>'1','02'=>'2','03'=>'3','04'=>'4','05'=>'5','06'=>'6','07'=>'7','08'=>'8','09'=>'9','10'=>'A','11'=>'B','12'=>'C');
+            // S = summary file , L = for transaaction list , C for monthly file
+            // $time = $this->site_model->get_db_now();
+            $rargs["MONTH(read_details.read_date) = MONTH('".date2Sql($date)."') "] = array('use'=>'where','val'=>null,'third'=>false);
+            $select = "read_details.*";
+            $results = $this->site_model->get_tbl('read_details',$rargs,array('scope_from'=>'asc'),"",true,$select);
+            foreach ($results as $res) {
+                $from = $res->scope_from;
+                break;
+            }
+            foreach ($results as $res) {
+                $to = $res->scope_to;
+            }
+            $read_date = date("Y-m-t", strtotime($from) );
+            $zread = array(
+                'from' => $from,
+                'to'   => $to,
+                'read_date' => $read_date,
+            );
+
+            $user = $this->session->userdata('user');
+            $args['trans_sales.datetime >= '] = $zread['from'];             
+            $args['trans_sales.datetime <= '] = $zread['to'];             
+            $trans = $this->trans_sales($args);
+            #######################
+            ## DAILY 
+                $file = $araneta->lessee_name;
+                $this->araneta_generate_daily($file,$zread,$trans,$araneta,true);
+        }
     ##################
     ### SCRIPT FIX
     ##################
@@ -1662,15 +1901,25 @@ class Reads extends CI_Controller {
            echo "file created";
         } 
         public function insert_reref(){
-            $id_ctr=50;
-            $shift_id=5;
-
+            $id_ctr=87;
+            $shift_id=4;
+            $user_id=9;
 
             $this->load->model('core/trans_model');
             $this->db = $this->load->database('main', TRUE);
+            $result = $this->site_model->get_tbl('trans_sales_payments',array('payment_type'=>'chit'));
+            
+            $ids = array();
+            foreach ($result as $res) {
+                if(!in_array($res->sales_id, $ids)){
+                     $ids[] = $res->sales_id;
+                }
+            }
+
             $args = array();
-            $args['trans_sales.datetime >='] = '2015-07-17 18:00:00';
-            $args['trans_sales.datetime <='] = '2015-07-18 05:00:00';
+            // $args['trans_sales.datetime >='] = '2015-07-17 18:00:00';
+            // $args['trans_sales.datetime <='] = '2015-07-18 05:00:00';
+            $args['trans_sales.sales_id'] = $ids;
             $result = $this->cashier_model->get_just_trans_sales(
                 null,
                 $args,
@@ -1694,7 +1943,7 @@ class Reads extends CI_Controller {
                 $row['pos_id'] = TERMINAL_ID;
                 $sales[] = $row;
             }
-            $start_ref = "00000001";
+            $start_ref = "00000077";
             $ctr = 1;
 
             foreach ($sales as $key => $row) {
@@ -1708,8 +1957,10 @@ class Reads extends CI_Controller {
 
                 $row['sales_id'] = $s_id[$row['sales_id']];
                 $row['trans_ref'] = $next;
-                $row['datetime'] = str_replace('07-17', '07-18', $row['datetime']);
+                $row['datetime'] = str_replace('07-18', '07-17', $row['datetime']);
+                $row['update_date'] = str_replace('07-18', '07-17', $row['update_date']);
                 $row['shift_id'] = $shift_id;
+                $row['user_id'] = $user_id;
                 $sales[$key] = $row;
                 $ctr++;
             }
@@ -1757,7 +2008,10 @@ class Reads extends CI_Controller {
             }
             foreach ($details as $tbl => $det) {
                 foreach ($det as $id => $row) {
-                    $row['sales_id'] = $s_id[$row['sales_id']];
+                    if($tbl == "reasons")
+                        $row['trans_id'] = $s_id[$row['trans_id']];
+                    else
+                        $row['sales_id'] = $s_id[$row['sales_id']];
                     $det[$id] = $row;
                 }
                 $details[$tbl] = $det;

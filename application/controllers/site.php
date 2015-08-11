@@ -185,6 +185,14 @@ class Site extends Reads {
 				                else if(MALL == "ortigas"){
 				                    $this->ortigas_file($zread_id);
 				                }
+				                else if(MALL == "araneta"){
+				                    $this->araneta_file($zread_id);
+				                    $last_date = date("Y-m-t", strtotime($read_date));
+				                    $now_date = date("Y-m-d", strtotime($read_date));
+				                    if($last_date == $now_date){
+				                        $this->araneta_month_file($now_date);
+				                    }
+				                }
 				            }
 
 						}	

@@ -581,26 +581,31 @@ class Cashier extends Reads {
         $this->load->model('dine/cashier_model');
         $this->load->model('dine/items_model');
         $this->load->model('core/trans_model');
+        $approver = "";
         $reason = "";
         $error = '';
+        if($this->input->post('reason'))
+            $reason = $this->input->post('reason');
+        if($this->input->post('approver'))
+            $approver = $this->input->post('approver');
+
         if($old){
             $this->db = $this->load->database('main',true);
                 $order = $this->get_order(false,$sales_id);
-                $this->cashier_model->update_trans_sales(array('reason'=>$reason,'inactive'=>1),$sales_id);
+                $this->cashier_model->update_trans_sales(array('reason'=>$reason,'void_user_id'=>$approver,'inactive'=>1),$sales_id);
             $this->db = $this->load->database('default',true);
                 $trans = $this->load_trans(false,$order,true);
                 $void = $this->submit_trans(false,null,true,$sales_id);
                 $this->finish_trans($void['id'],true,true);
-                $this->cashier_model->update_trans_sales(array('reason'=>$reason,'inactive'=>1),$sales_id);
+                $this->cashier_model->update_trans_sales(array('reason'=>$reason,'void_user_id'=>$approver,'inactive'=>1),$sales_id);
             $this->db = $this->load->database('main',true);
                 $print = $this->print_sales_receipt($sales_id,false);
         }
         else{
             $order = $this->get_order_header(false,$sales_id);
-            if($this->input->post('reason'))
-                $reason = $this->input->post('reason');
+            
             if($order['paid'] == 0){
-                $this->cashier_model->update_trans_sales(array('reason'=>$reason,'inactive'=>1),$sales_id);
+                $this->cashier_model->update_trans_sales(array('reason'=>$reason,'void_user_id'=>$approver,'inactive'=>1),$sales_id);
                 $print = $this->print_sales_receipt($sales_id,false);
             }
             else{
@@ -608,7 +613,7 @@ class Cashier extends Reads {
                 $trans = $this->load_trans(false,$order,true);
                 $void = $this->submit_trans(false,null,true,$sales_id);
                 $this->finish_trans($void['id'],true,true);
-                $this->cashier_model->update_trans_sales(array('reason'=>$reason,'inactive'=>1),$sales_id);
+                $this->cashier_model->update_trans_sales(array('reason'=>$reason,'void_user_id'=>$approver,'inactive'=>1),$sales_id);
                 $print = $this->print_sales_receipt($sales_id,false);
             }
         }
