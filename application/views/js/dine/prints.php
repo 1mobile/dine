@@ -32,6 +32,10 @@ $(document).ready(function(){
 			load_rep($(this).attr('ref'),$(this));
 			return false;
 		});
+		$('#pdf-paper-btn').click(function(){
+			$('#report-view-div').print();
+			return false;
+		});	
 		$('#print-paper-btn').click(function(){
 			var ref = $(this).attr('target');
 			$("#sform").rOkay({
@@ -136,6 +140,10 @@ $(document).ready(function(){
 			load_rep($(this).attr('ref'),$(this));
 			return false;
 		});
+		$('#pdf-paper-btn').click(function(){
+			$('#report-view-div').print();
+			return false;
+		});	
 		$('#print-paper-btn').click(function(){
 			var ref = $(this).attr('target');
 			var title = $(this).attr('title');
@@ -228,6 +236,10 @@ $(document).ready(function(){
 			load_rep($(this).attr('ref'),$(this));
 			return false;
 		});
+		$('#pdf-paper-btn').click(function(){
+			$('#report-view-div').print();
+			return false;
+		});	
 		$('#print-paper-btn').click(function(){
 			var ref = $(this).attr('target');
 			var title = $(this).attr('title');

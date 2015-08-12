@@ -33,6 +33,7 @@ function datetimePage(){
 							$CI->make->eDiv();
 							$buttons = array("system_sales_rep"	=> "System Sales",
 											 "menu_sales_rep"	=> "Menu Item Sales",
+											 "list_sales_rep"	=> "Transactions List",
 											 "void_sales_rep"	=> "Void Sales",
 											 // "daily_sales_rep"	=> "Daily Sales",
 											 "hourly_sales_rep"	=> "Hourly Sales",
@@ -46,8 +47,11 @@ function datetimePage(){
 								$CI->make->sBoxBody(array('class'=>'print-containers','style'=>'padding:0px;position:relative;background-color:#ddd'));
 									$CI->make->sDiv(array('style'=>'width:100%;position:absolute;top:0px;'));
 										$CI->make->sDivRow();
-											$CI->make->sDivCol(10);
+											$CI->make->sDivCol(8);
 												$CI->make->button(fa('fa-print').'Print',array('id'=>'print-paper-btn','class'=>'btn-block load-types-btns manager-btn-green'));
+											$CI->make->eDivCol();
+											$CI->make->sDivCol(2);
+												$CI->make->button(fa('fa-save').'PDF',array('id'=>'pdf-paper-btn','class'=>'btn-block load-types-btns manager-btn-orange'));
 											$CI->make->eDivCol();
 											$CI->make->sDivCol(1);
 												$CI->make->button(fa('fa-chevron-circle-up fa-lg'),array('id'=>'up-paper-btn','class'=>'btn-block load-types-btns manager-btn-red-gray'));
@@ -97,6 +101,7 @@ function shiftsPage($today=null){
 														 "system_sales_rep"	=> "XREAD",
 														 "cash_count_rep"	=> "Cash Count",
 														 "menu_sales_rep"	=> "Menu Item Sales",
+														 "list_sales_rep"	=> "Transactions List",
 														 "void_sales_rep"	=> "Void Sales",
 														 // "daily_sales_rep"	=> "Daily Sales",
 														 "hourly_sales_rep"	=> "Hourly Sales",
@@ -110,8 +115,11 @@ function shiftsPage($today=null){
 											$CI->make->sBoxBody(array('class'=>'print-containers','style'=>'padding:0px;position:relative;background-color:#ddd'));
 												$CI->make->sDiv(array('style'=>'width:100%;position:absolute;top:0px;'));
 													$CI->make->sDivRow();
-														$CI->make->sDivCol(10);
+														$CI->make->sDivCol(8);
 															$CI->make->button(fa('fa-print').'Print',array('id'=>'print-paper-btn','class'=>'btn-block load-types-btns manager-btn-green'));
+														$CI->make->eDivCol();
+														$CI->make->sDivCol(2);
+															$CI->make->button(fa('fa-save').'PDF',array('id'=>'pdf-paper-btn','class'=>'btn-block load-types-btns manager-btn-orange'));
 														$CI->make->eDivCol();
 														$CI->make->sDivCol(1);
 															$CI->make->button(fa('fa-chevron-circle-up fa-lg'),array('id'=>'up-paper-btn','class'=>'btn-block load-types-btns manager-btn-red-gray'));
@@ -164,6 +172,7 @@ function dayReadsPage($today=null){
 										$buttons = array(
 														 "system_sales_rep"	=> "ZREAD",
 														 "menu_sales_rep"	=> "Menu Item Sales",
+														 "list_sales_rep"	=> "Transactions List",
 														 "void_sales_rep"	=> "Void Sales",
 														 // "daily_sales_rep"	=> "Daily Sales",
 														 "hourly_sales_rep"	=> "Hourly Sales",
@@ -177,8 +186,11 @@ function dayReadsPage($today=null){
 											$CI->make->sBoxBody(array('class'=>'print-containers','style'=>'padding:0px;position:relative;background-color:#ddd'));
 												$CI->make->sDiv(array('style'=>'width:100%;position:absolute;top:0px;'));
 													$CI->make->sDivRow();
-														$CI->make->sDivCol(10);
+														$CI->make->sDivCol(8);
 															$CI->make->button(fa('fa-print').'Print',array('id'=>'print-paper-btn','class'=>'btn-block load-types-btns manager-btn-green'));
+														$CI->make->eDivCol();
+														$CI->make->sDivCol(2);
+															$CI->make->button(fa('fa-save').'PDF',array('id'=>'pdf-paper-btn','class'=>'btn-block load-types-btns manager-btn-orange'));
 														$CI->make->eDivCol();
 														$CI->make->sDivCol(1);
 															$CI->make->button(fa('fa-chevron-circle-up fa-lg'),array('id'=>'up-paper-btn','class'=>'btn-block load-types-btns manager-btn-red-gray'));

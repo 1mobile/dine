@@ -439,7 +439,9 @@ class Cashier_model extends CI_Model{
 	public function get_reasons($trans_id=null,$args=array()){
 		$this->db->select('reasons.*,
 						   cas.fname,cas.mname,cas.lname,cas.suffix,
-						   man.fname,man.mname,man.lname,man.suffix
+						   man.fname,man.mname,man.lname,man.suffix,
+						   man.username as man_username,
+						   cas.username as cas_username
 						   ');
 		$this->db->from('reasons');
 		$this->db->join('users cas','reasons.user_id=cas.id');

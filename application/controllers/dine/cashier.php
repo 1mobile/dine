@@ -1877,19 +1877,19 @@ class Cashier extends Reads {
                 "absolute" => $dc['absolute']
             );
         }
-        if($counter['type'] == 'dinein'){
-            if(!isset($charge[1])){
-                $serc = $this->settings_model->get_charges(1);
-                $sc = $serc[0];
-                $charge[$sc->charge_id] = array(
-                    "name"  => $sc->charge_name,
-                    "code"  => $sc->charge_code,
-                    "amount"  => $sc->charge_amount,
-                    "absolute" => $sc->absolute
-                );
-                sess_add("trans_charge_cart",$charge[$sc->charge_id],$sc->charge_id);
-            }
-        }
+        // if($counter['type'] == 'dinein'){
+        //     if(!isset($charge[1])){
+        //         $serc = $this->settings_model->get_charges(1);
+        //         $sc = $serc[0];
+        //         $charge[$sc->charge_id] = array(
+        //             "name"  => $sc->charge_name,
+        //             "code"  => $sc->charge_code,
+        //             "amount"  => $sc->charge_amount,
+        //             "absolute" => $sc->absolute
+        //         );
+        //         sess_add("trans_charge_cart",$charge[$sc->charge_id],$sc->charge_id);
+        //     }
+        // }
         if($asJson)
             echo json_encode($charge);
         else

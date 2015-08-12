@@ -96,6 +96,87 @@ class Prints extends CI_Controller {
         }
     ##############
     #### REPORTS
+        public function list_sales_rep($asJson=false){
+            $print_str = $this->print_header();
+            $user = $this->session->userdata('user');
+            $time = $this->site_model->get_db_now();
+            $post = $this->set_post();
+            $curr = $this->search_current();
+            $trans = $this->trans_sales($post['args'],$curr);
+            $sales = $trans['sales'];
+            $settled = $trans['sales']['settled']['orders'];
+            usort($settled, function($a, $b) {
+                return $a->trans_ref - $b->trans_ref;
+            });
+
+            $title_name = "Transactions List";
+            if($post['title'] != "")
+                $title_name = $post['title'];
+
+            $print_str .= align_center($title_name,38," ")."\r\n";
+            $print_str .= align_center("TERMINAL ".$post['terminal'],38," ")."\r\n";
+            $print_str .= append_chars('Printed On','right',11," ").append_chars(": ".date2SqlDateTime($time),'right',19," ")."\r\n";
+            $print_str .= append_chars('Printed BY','right',11," ").append_chars(": ".$user['full_name'],'right',19," ")."\r\n";
+            $print_str .= "======================================"."\r\n";
+            $print_str .= align_center(sql2DateTime($post['from'])." - ".sql2DateTime($post['to']),38," ")."\r\n";
+            if($post['employee'] != "All")
+                $print_str .= align_center($post['employee'],38," ")."\r\n";
+
+            $print_str .= "\r\n";
+            foreach ($settled as $key => $set){
+                // $trans_menus = $this->menu_sales($sales_id,$curr);
+                $trans_charges = $this->charges_sales($set->sales_id,$curr);
+                $trans_discounts = $this->discounts_sales($set->sales_id,$curr);
+                $trans_local_tax = $this->local_tax_sales($set->sales_id,$curr);
+                $trans_tax = $this->tax_sales($set->sales_id,$curr);
+                $trans_no_tax = $this->no_tax_sales($set->sales_id,$curr);
+                $trans_zero_rated = $this->zero_rated_sales($set->sales_id,$curr);
+
+                $print_str .= align_center($set->trans_ref,38," ")."\r\n";
+                $print_str .= align_center($set->datetime,38," ")."\r\n";
+
+                $net = $set->total_amount;
+                $charges = $trans_charges['total']; 
+                $discounts = $trans_discounts['total']; 
+                $tax_disc = $trans_discounts['tax_disc_total']; 
+                $no_tax_disc = $trans_discounts['no_tax_disc_total']; 
+                $local_tax = $trans_local_tax['total']; 
+
+                $tax = $trans_tax['total'];
+                $no_tax = $trans_no_tax['total'];
+
+                $zero_rated = $trans_zero_rated['total'];
+                $no_tax -= $zero_rated;
+                $net_no_adds = ($net)-$charges-$local_tax;
+
+                $taxable = ( ($net_no_adds + $no_tax_disc) - ($tax + $no_tax)); 
+                $print_str .= append_chars(substrwords('Taxable',18,""),"right",23," ")
+                             .append_chars(numInt(($taxable)),"left",13," ")."\r\n";
+                $total_net = $taxable + $no_tax + $zero_rated + $tax;
+                $print_str .= append_chars(substrwords('NonTaxable',18,""),"right",23," ")
+                             .append_chars(numInt(($no_tax)),"left",13," ")."\r\n";
+                $print_str .= append_chars(substrwords('ZeroRated',13,""),"right",23," ")
+                             .append_chars(numInt(($zero_rated)),"left",13," ")."\r\n";
+                $print_str .= append_chars(substrwords('VAT Amount',18,""),"right",23," ")
+                                         .append_chars(numInt(($tax)),"left",13," ")."\r\n";   
+                $print_str .= append_chars("","right",23," ").append_chars("-----------","left",13," ")."\r\n";
+                $print_str .= append_chars(substrwords('Total',18,""),"right",23," ")
+                                         .append_chars(numInt(($total_net)),"left",13," ")."\r\n"; 
+                $print_str .= append_chars(substrwords('Charges',18,""),"right",23," ")
+                                         .append_chars(numInt(($charges)),"left",13," ")."\r\n";                         
+                $print_str .= append_chars(substrwords('Local Tax',18,""),"right",23," ")
+                                         .append_chars(numInt(($local_tax)),"left",13," ")."\r\n";                         
+                $print_str .= append_chars(substrwords('Discounts',18,""),"right",23," ")
+                                         .append_chars(numInt(($discounts)),"left",13," ")."\r\n";                         
+                $print_str .= "======================================"."\r\n";
+                $print_str .= append_chars(substrwords('NET SALES',18,""),"right",23," ")
+                             .append_chars(numInt(($set->total_amount)),"left",13," ")."\r\n";                         
+
+                $print_str .= "\r\n";
+            }   
+            ########### 
+            $this->do_print($print_str,$asJson);
+        }    
         public function void_sales_rep($asJson=false){
             $print_str = $this->print_header();
             $user = $this->session->userdata('user');
@@ -129,11 +210,34 @@ class Prints extends CI_Controller {
             $total_void_sales = 0;   
             if(count($void) > 0){
                 foreach ($void as $v) {
-                    $print_str .= append_chars(substrwords("Ref ".$v->trans_ref,18,""),"right",18," ").align_center('',5," ")
+                    $order = $trans['all_orders'];
+                    $print_str .= append_chars(substrwords($v->trans_ref,18,""),"right",18," ").align_center('',5," ")
                              .append_chars(numInt($v->total_amount),"left",13," ")."\r\n";
-                    if($v->table_name != ""){
-                        $print_str .= append_chars(substrwords("--".$v->table_name,18,""),"right",18," ").align_center('',5," ")
+                    if(isset($order[$v->void_ref])){
+                        $ord = $order[$v->void_ref];
+                        $print_str .= append_chars(substrwords("Receipt: ",18,""),"right",12," ").align_center($ord->trans_ref,10," ")
                                  .append_chars('',"left",13," ")."\r\n";
+                    }             
+                    if($v->table_name != ""){
+                        $print_str .= append_chars(substrwords("Table: ",18,""),"right",12," ").align_center($v->table_name,10," ")
+                                 .append_chars('',"left",13," ")."\r\n";
+                    }
+                    $server = $this->manager_model->get_server_details($v->user_id);
+                    $cashier = $server[0]->username;       
+                    $print_str .= append_chars(substrwords("Cashier: ",18,""),"right",12," ").align_center($cashier,10," ")
+                             .append_chars('',"left",13," ")."\r\n";
+                    if(isset($order[$v->void_ref])){
+                        $ord = $order[$v->void_ref];
+                        $print_str .= append_chars(substrwords("Reason: ",18,""),"right",12," ").align_center('',5," ")
+                                 .append_chars('',"left",13," ")."\r\n";
+                        $print_str .= append_chars("--".$ord->reason,"right",12," ").align_center('',5," ")
+                                 .append_chars('',"left",13," ")."\r\n";
+                        if($ord->void_user_id != ""){
+                            $server = $this->manager_model->get_server_details($ord->void_user_id);
+                            $voider = $server[0]->username;       
+                            $print_str .= append_chars(substrwords("Approved By: ",18,""),"right",12," ").align_center($voider,10," ")
+                                     .append_chars('',"left",13," ")."\r\n";
+                        }
                     }
                     $total_void_sales += $v->total_amount;
                 }                
@@ -153,10 +257,26 @@ class Prints extends CI_Controller {
                 foreach ($cancel as $v) {
                     $print_str .= append_chars(substrwords("Order #".$v->sales_id,18,""),"right",18," ").align_center('',5," ")
                              .append_chars(numInt($v->total_amount),"left",13," ")."\r\n";
+                    $server = $this->manager_model->get_server_details($v->user_id);
+                    $cashier = $server[0]->username;       
+                    $print_str .= append_chars(substrwords("Cashier: ",18,""),"right",12," ").align_center($cashier,10," ")
+                             .append_chars('',"left",13," ")."\r\n";
+
                     if($v->table_name != ""){
-                        $print_str .= append_chars(substrwords("--".$v->table_name,18,""),"right",18," ").align_center('',5," ")
+                        $print_str .= append_chars(substrwords("Table: ",18,""),"right",12," ").align_center($v->table_name,10," ")
                                  .append_chars('',"left",13," ")."\r\n";
                     }
+                    $print_str .= append_chars(substrwords("Reason: ",18,""),"right",12," ").align_center('',5," ")
+                             .append_chars('',"left",13," ")."\r\n";
+                    $print_str .= append_chars("--".$v->reason,"right",12," ").align_center('',5," ")
+                             .append_chars('',"left",13," ")."\r\n";
+                    if($v->void_user_id != ""){
+                        $server = $this->manager_model->get_server_details($v->void_user_id);
+                        $voider = $server[0]->username;       
+                        $print_str .= append_chars(substrwords("Approved By: ",18,""),"right",12," ").align_center($voider,10," ")
+                                 .append_chars('',"left",13," ")."\r\n";
+                    }
+
                     $total_void_sales += $v->total_amount;
                 }                
             }  
@@ -175,16 +295,19 @@ class Prints extends CI_Controller {
                 foreach ($trans_removes as $v) {
                     $print_str .= append_chars(substrwords("Order #".$v['trans_id'],18,""),"right",18," ").align_center('',5," ")
                              .append_chars(null,"left",13," ")."\r\n";
+                    $print_str .= append_chars(substrwords("Cashier: ",18,""),"right",12," ").align_center($v['cashier'],10," ")
+                             .append_chars('',"left",13," ")."\r\n";
                     $print_str .= append_chars(substrwords("*".$v['item'],18,""),"right",18," ").align_center('',5," ")
                              .append_chars("","left",13," ")."\r\n";
                     $print_str .= " ".urldecode($v['reason'])."\r\n";         
+                    $print_str .= append_chars(substrwords("Approved By: ",18,""),"right",12," ").align_center($v['manager'],10," ")
+                             .append_chars('',"left",13," ")."\r\n";
+                             
                 }                
             }  
             else{
                 $print_str .= append_chars(substrwords("No Menus Found. ",18,""),"right",18," ").align_center('',5," ");
             }
-
-
             $this->do_print($print_str,$asJson);
         }    
         public function menu_sales_rep($asJson=false){
@@ -363,13 +486,18 @@ class Prints extends CI_Controller {
                         
             $net_no_adds = $net-$charges-$local_tax;
             $print_str .= "\r\n";
+            $ns = $net-$charges;
             $print_str .= append_chars(substrwords('NET SALES',18,""),"right",23," ")
-                         .append_chars(numInt(($net)),"left",13," ")."\r\n";
-            $txt = numInt(($charges));
-            if($charges > 0)
-                $txt = "(".numInt(($charges)).")";
-            $print_str .= append_chars(substrwords('Charges',18,""),"right",23," ")
-                         .append_chars($txt,"left",13," ")."\r\n";
+                         .append_chars(numInt(($ns)),"left",13," ")."\r\n";
+            ##############
+            ## OLD 
+            // $print_str .= append_chars(substrwords('NET SALES',18,""),"right",23," ")
+            //              .append_chars(numInt(($net)),"left",13," ")."\r\n";
+            // $txt = numInt(($charges));
+            // if($charges > 0)
+            //     $txt = "(".numInt(($charges)).")";
+            // $print_str .= append_chars(substrwords('Charges',18,""),"right",23," ")
+            //              .append_chars($txt,"left",13," ")."\r\n";
 
             $txt = numInt(($local_tax));
             if($local_tax > 0)
@@ -515,10 +643,10 @@ class Prints extends CI_Controller {
 
             $print_str .= "\r\n";
             $print_str .= "======================================"."\r\n";
-            $taxable = ($net_no_adds - ($tax + $no_tax)); 
+            $taxable = ($net_no_adds - ($tax + $no_tax + $zero_rated)); 
             $print_str .= append_chars(substrwords('Taxable',18,""),"right",23," ")
                          .append_chars(numInt(($taxable)),"left",13," ")."\r\n";
-            $total_net = $taxable + $no_tax + $zero_rated + $tax;
+            $total_net = $taxable + ($no_tax + $zero_rated) + $tax;
             $print_str .= append_chars(substrwords('NonTaxable',18,""),"right",23," ")
                          .append_chars(numInt(($no_tax)),"left",13," ")."\r\n";
             $print_str .= append_chars(substrwords('ZeroRated',13,""),"right",23," ")
@@ -795,8 +923,8 @@ class Prints extends CI_Controller {
             $date = "";
             $range = $this->input->post('calendar_range');
             $calendar = $this->input->post('calendar');
-            // $calendar = '2015-07-19';
-            // $range = '2015/08/04 12:00 AM to 2015/08/04 12:00 AM';
+            // $calendar = '2015-08-11';
+            // $range = '2015/08/11 12:00 AM to 2015/08/13 12:00 AM';
             $title = "";
             if($this->input->post('title'))
                 $title = $this->input->post('title');
@@ -952,12 +1080,13 @@ class Prints extends CI_Controller {
                     $void_amount += $sale->total_amount;
                 }
                 $all_ids[] = $sales_id;
+                $all_orders[$sales_id] = $sale;
             }
             ksort($ordsnums);
             $first = array_shift(array_slice($ordsnums, 0, 1));
             $last = end($ordsnums);
             $ref_ctr = count($ordsnums);
-            return array('all_ids'=>$all_ids,'sales'=>$sales,'net'=>$net,'void'=>$void_amount,'types'=>$types,'refs'=>$ordsnums,'first_ref'=>$first,'last_ref'=>$last,'ref_count'=>$ref_ctr);
+            return array('all_ids'=>$all_ids,'all_orders'=>$all_orders,'sales'=>$sales,'net'=>$net,'void'=>$void_amount,'types'=>$types,'refs'=>$ordsnums,'first_ref'=>$first,'last_ref'=>$last,'ref_count'=>$ref_ctr);
         }    
         public function menu_sales($ids=array(),$curr=false){
             $cats = array();
@@ -1240,7 +1369,6 @@ class Prints extends CI_Controller {
                 }
                 $this->db = $this->load->database('main', TRUE);
                 $cesults = $this->site_model->get_tbl('trans_sales_no_tax',$cargs);   
-                
                 foreach ($cesults as $ces) {
                     if(!in_array($ces->sales_id, $ids_used)){
                         $ids_used[] = $ces->sales_id;
@@ -1291,6 +1419,8 @@ class Prints extends CI_Controller {
             $discounts = array();
             $disc_codes = array();
             $ids_used = array();
+            $taxable_disc = 0;
+            $non_taxable_disc = 0;
             if(count($ids) > 0){
                 $n_sales_discs = array();
                 if($curr){
@@ -1312,6 +1442,12 @@ class Prints extends CI_Controller {
                         $disc_codes[$discs->disc_code]['amount'] += $discs->amount;
                     }
                     $total_disc += $discs->amount;
+                    if($discs->no_tax == 1){
+                        $non_taxable_disc += $discs->amount;
+                    }
+                    else{
+                        $taxable_disc += $discs->amount;
+                    }
                 }
                 if(count($n_sales_discs) > 0){
                     foreach ($n_sales_discs as $discs) {
@@ -1324,12 +1460,20 @@ class Prints extends CI_Controller {
                                 $disc_codes[$discs->disc_code]['amount'] += $discs->amount;
                             }
                             $total_disc += $discs->amount;
+                            if($discs->no_tax == 1){
+                                $non_taxable_disc += $discs->amount;
+                            }
+                            else{
+                                $taxable_disc += $discs->amount;
+                            }
                         }
                     }
                 }  
             }
             $discounts['total']=$total_disc;
             $discounts['types']=$disc_codes;
+            $discounts['tax_disc_total']=$taxable_disc;
+            $discounts['no_tax_disc_total']=$non_taxable_disc;
             return $discounts;
         }
         public function payment_sales($ids=array(),$curr=false){
@@ -1405,14 +1549,14 @@ class Prints extends CI_Controller {
                         $ids_used[] = $res->id;
                     }
                     if(!isset($reasons[$res->id])){
-                        $reasons[$res->id] = array('item'=>$res->ref_name,'reason'=>$res->reason,'trans_id'=>$res->trans_id);
+                        $reasons[$res->id] = array('item'=>$res->ref_name,'reason'=>$res->reason,'trans_id'=>$res->trans_id,'manager'=>$res->man_username,'cashier'=>$res->cas_username);
                     }
                 }
                 if(count($n_remove_sales) > 0){
                     foreach ($n_remove_sales as $res) {
                         if(!in_array($res->id, $ids_used)){
                             if(!isset($reasons[$res->id])){
-                                $reasons[$res->id] = array('item'=>$res->ref_name,'reason'=>$res->reason,'trans_id'=>$res->trans_id);
+                                $reasons[$res->id] = array('item'=>$res->ref_name,'reason'=>$res->reason,'trans_id'=>$res->trans_id,'manager'=>$res->man_username,'cashier'=>$res->cas_username);
                             }
                         }
                     }

@@ -85,11 +85,23 @@ class Site extends Reads {
 	            }
 	            else{
 	    		    $shifts_today = $this->cashier_model->get_next_x_read_details($check_date);
-	    		    foreach ($shifts_today as $res) {
-	    		        $check_date = $res->scope_from;
-	    		        break;
-	    		    }		        	
+	    		    if(count($shifts_today) > 0){
+		    		    foreach ($shifts_today as $res) {
+		    		        $check_date = $res->scope_from;
+		    		        break;
+		    		    }		        	
+	    		    }
+	    		    else{
+	    		    	$yesterday = date('Y-m-d',strtotime($time . "-1 days"));
+	    		    	$check_date = date('Y-m-d',strtotime($check_date ));
+	    		    	$date1 = strtotime($yesterday);
+	    		    	$date2 = strtotime($check_date);
+	    		    	if($date1 == $date2){
+	    		    		$check_date = $time;
+	    		    	}
+	    		    }
 	            }
+
 			}
 			else{
 			    if($got_z_read){
