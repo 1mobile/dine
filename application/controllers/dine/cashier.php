@@ -577,6 +577,20 @@ class Cashier extends Reads {
         $code = $this->make->code();
         echo json_encode(array('code'=>$code));
     }
+    public function change_order_to($sales_id=null,$old=false){
+        $this->load->model('dine/cashier_model');
+        $tbl_id = null;
+        $type = null;
+        $error = '';
+        if($this->input->post('type'))
+            $type = $this->input->post('type');
+
+        if($this->input->post('tbl_id'))
+            $tbl_id = $this->input->post('tbl_id');
+
+        $this->cashier_model->update_trans_sales(array('type'=>$type,'table_id'=>$tbl_id),$sales_id);
+        echo json_encode(array('error'=>$error));
+    }
     public function void_order($sales_id=null,$old=false){
         $this->load->model('dine/cashier_model');
         $this->load->model('dine/items_model');

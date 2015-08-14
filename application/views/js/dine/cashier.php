@@ -162,6 +162,76 @@ $(document).ready(function(){
 			});				
 			return false;
 		});
+		$("#change-to-btn").click(function(){
+			var id = $('.order-view-list').attr('ref');
+			var type = $('.order-view-list').attr('type');
+			var status = $('.order-view-list').attr('status');
+			$.callManager({
+				success : function(manager){
+					loadDivs('change-to');
+				}
+			});	
+			return false;
+		});
+		$(".change-to-btns").click(function(){
+			var id = $('.order-view-list').attr('ref');
+			var type = $('.order-view-list').attr('type');
+			var change_type = $(this).attr('ref');
+			var btn = $(this);
+			formData = 'type='+change_type;
+			btn.goLoad();
+			if(change_type == 'dinein'){
+				bootbox.dialog({
+				  message: baseUrl+'cashier/transfer_tables',
+				  // title: 'Somthing',
+				  className: 'manager-call-pop',
+				  buttons: {
+				    submit: {
+				      label: "Transfer",
+				      className: "btn  pop-manage pop-manage-green",
+				      callback: function() {
+				        var sales_id = id;
+				        var to_table = $('#to-table').val();
+				        formData = 'type='+change_type+'&tbl_id='+to_table;
+				       	$.post(baseUrl+'cashier/change_order_to/'+id,formData,function(data){
+				       		if(data.error == ""){
+				       			$("#refresh-btn").trigger('click');
+				       			rMsg('Success!  Order '+' #'+id+' Changed to '+type,'success');
+				       			btn.goLoad({load:false});
+				       		}
+				       		else{
+				       			rMsg(data.error,'error');
+				       		}
+				       	},'json');	
+				      }
+				    },
+				    cancel: {
+				      label: "CANCEL",
+				      className: "btn pop-manage pop-manage-red",
+				      callback: function() {
+				        // Example.show("uh oh, look out!");
+				        btn.goLoad({load:false});
+				      }
+				    }
+				  }
+				});
+			}	
+			else{
+				$.post(baseUrl+'cashier/change_order_to/'+id,formData,function(data){
+					if(data.error == ""){
+						$("#refresh-btn").trigger('click');
+						rMsg('Success!  Order '+' #'+id+' Changed to '+type,'success');
+						btn.goLoad({load:false});
+					}
+					else{
+						rMsg(data.error,'error');
+					}
+				},'json');				
+			}		
+			// alert(data);
+			// });
+			return false;
+		});
 		$(".reason-btns").click(function(){
 			var id = $('.order-view-list').attr('ref');
 			var type = $('.order-view-list').attr('type');
@@ -259,6 +329,7 @@ $(document).ready(function(){
 								$('#cash-btn').attr('disabled','disabled');
 								$('#credit-btn').attr('disabled','disabled');
 								$('#void-btn').attr('disabled','disabled');
+								$('#change-to-btn').attr('disabled','disabled');
 							}else{
 								if(now == 'all_trans'){
 									$('#recall-btn').attr('disabled','disabled');
@@ -280,6 +351,7 @@ $(document).ready(function(){
 											$('#settle-btn').attr('disabled','disabled');
 											$('#cash-btn').attr('disabled','disabled');
 											$('#credit-btn').attr('disabled','disabled');
+											$('#change-to-btn').attr('disabled','disabled');
 										}
 										else{
 											$('#recall-btn').removeAttr('disabled');
@@ -290,6 +362,7 @@ $(document).ready(function(){
 											$('#cash-btn').removeAttr('disabled');
 											$('#credit-btn').removeAttr('disabled');
 											$('#void-btn').removeAttr('disabled');
+											$('#change-to-btn').removeAttr('disabled');
 										}
 
 									//ORIGINAL

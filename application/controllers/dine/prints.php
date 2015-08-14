@@ -123,6 +123,8 @@ class Prints extends CI_Controller {
                 $print_str .= align_center($post['employee'],38," ")."\r\n";
 
             $print_str .= "\r\n";
+            // $total_vat = 0;
+            // $total_taxable = 0;
             foreach ($settled as $key => $set){
                 // $trans_menus = $this->menu_sales($sales_id,$curr);
                 $trans_charges = $this->charges_sales($set->sales_id,$curr);
@@ -173,7 +175,14 @@ class Prints extends CI_Controller {
                              .append_chars(numInt(($set->total_amount)),"left",13," ")."\r\n";                         
 
                 $print_str .= "\r\n";
+                // $total_vat += $tax;
+                // $total_taxable += $taxable;
             }   
+            // $print_str .= append_chars(substrwords('VAT',18,""),"right",23," ")
+            //  .append_chars(numInt(($total_vat)),"left",13," ")."\r\n";                         
+            // $print_str .= append_chars(substrwords('TAXABLE',18,""),"right",23," ")
+            //  .append_chars(numInt(($total_taxable)),"left",13," ")."\r\n";                         
+
             ########### 
             $this->do_print($print_str,$asJson);
         }    
@@ -429,7 +438,7 @@ class Prints extends CI_Controller {
                          .append_chars($txt,"left",13," ")."\r\n";                          
             $print_str .= append_chars(substrwords('Discounts',18,""),"right",25," ")
                          .append_chars(numInt(($discounts)),"left",13," ")."\r\n";
-            $print_str .= append_chars(substrwords('VAT',18,""),"right",25," ")
+            $print_str .= append_chars(substrwords('LESS VAT',18,""),"right",25," ")
                          .append_chars(numInt(($less_vat)),"left",13," ")."\r\n";
             $print_str .= append_chars(substrwords('GROSS SALES',18,""),"right",25," ")
                          .append_chars(numInt(($gross)),"left",13," ")."\r\n";
@@ -448,6 +457,8 @@ class Prints extends CI_Controller {
             $trans_menus = $this->menu_sales($sales['settled']['ids'],$curr);
             $trans_charges = $this->charges_sales($sales['settled']['ids'],$curr);
             $trans_discounts = $this->discounts_sales($sales['settled']['ids'],$curr);
+            $tax_disc = $trans_discounts['tax_disc_total']; 
+            $no_tax_disc = $trans_discounts['no_tax_disc_total']; 
             $trans_local_tax = $this->local_tax_sales($sales['settled']['ids'],$curr);
             $trans_tax = $this->tax_sales($sales['settled']['ids'],$curr);
             $trans_no_tax = $this->no_tax_sales($sales['settled']['ids'],$curr);
@@ -483,12 +494,42 @@ class Prints extends CI_Controller {
             $print_str .= align_center(sql2DateTime($post['from'])." - ".sql2DateTime($post['to']),38," ")."\r\n";
             if($post['employee'] != "All")
                 $print_str .= align_center($post['employee'],38," ")."\r\n";
-                        
-            $net_no_adds = $net-$charges-$local_tax;
+            
+            $loc_txt = numInt(($local_tax));
+            if($local_tax > 0)
+                $loc_txt = "(".numInt(($local_tax)).")";
+            $net_no_adds = $net-($charges+$local_tax);
+            $nontaxable = $no_tax - $no_tax_disc;
+            $taxable =   ($net_no_adds - ($tax + ($nontaxable+$zero_rated))  );
+            $total_net = ($taxable) + ($nontaxable+$zero_rated) + $tax + $local_tax;
+
+            // $taxable = ($net_no_adds - ($tax + $no_tax + $zero_rated)); 
             $print_str .= "\r\n";
-            $ns = $net-$charges;
             $print_str .= append_chars(substrwords('NET SALES',18,""),"right",23," ")
-                         .append_chars(numInt(($ns)),"left",13," ")."\r\n";
+                         .append_chars(numInt(($taxable)),"left",13," ")."\r\n";
+            $print_str .= append_chars(substrwords('VAT EXEMPT SALES',18,""),"right",23," ")
+                         .append_chars(numInt(($nontaxable)),"left",13," ")."\r\n";
+            $print_str .= append_chars(substrwords('ZERO RATED',13,""),"right",23," ")
+                         .append_chars(numInt(($zero_rated)),"left",13," ")."\r\n";
+            $print_str .= append_chars(substrwords('VAT',18,""),"right",23," ")
+                                     .append_chars(numInt($tax),"left",13," ")."\r\n";  
+            // $print_str .= append_chars(substrwords('VAT EXEMPT',18,""),"right",23," ")
+            //                          .append_chars(numInt($less_vat),"left",13," ")."\r\n";  
+            // $print_str .= append_chars(substrwords('VAT',18,""),"right",23," ")
+            //                          .append_chars($tax,"left",13," ")."\r\n";  
+            $print_str .= append_chars(substrwords('Local Tax',18,""),"right",23," ")
+                         .append_chars($loc_txt,"left",13," ")."\r\n";  
+            $print_str .= append_chars("","right",23," ").append_chars("-----------","left",13," ")."\r\n";                         
+            $print_str .= append_chars(substrwords('GROSS SALES',18,""),"right",23," ")
+                                     .append_chars(numInt(($total_net)),"left",13," ")."\r\n";   
+            $print_str .= append_chars(substrwords('VOID SALES',18,""),"right",23," ")
+                         .append_chars(numInt(($void)),"left",13," ")."\r\n";
+
+
+            // $print_str .= "\r\n";
+            // $ns = $net-$charges;
+            // $print_str .= append_chars(substrwords('NET SALES',18,""),"right",23," ")
+            //              .append_chars(numInt(($ns)),"left",13," ")."\r\n";
             ##############
             ## OLD 
             // $print_str .= append_chars(substrwords('NET SALES',18,""),"right",23," ")
@@ -499,21 +540,17 @@ class Prints extends CI_Controller {
             // $print_str .= append_chars(substrwords('Charges',18,""),"right",23," ")
             //              .append_chars($txt,"left",13," ")."\r\n";
 
-            $txt = numInt(($local_tax));
-            if($local_tax > 0)
-                $txt = "(".numInt(($local_tax)).")";
-            $print_str .= append_chars(substrwords('Local Tax',18,""),"right",23," ")
-                         .append_chars($txt,"left",13," ")."\r\n";                          
-            $print_str .= append_chars(substrwords('Discounts',18,""),"right",23," ")
-                         .append_chars(numInt(($discounts)),"left",13," ")."\r\n";
-            $print_str .= append_chars(substrwords('VAT',18,""),"right",23," ")
-                         .append_chars(numInt(($less_vat)),"left",13," ")."\r\n";
-            $print_str .= append_chars("","right",23," ").append_chars("-----------","left",13," ")."\r\n";
-            $print_str .= append_chars(substrwords('GROSS SALES',18,""),"right",23," ")
-                         .append_chars(numInt(($gross)),"left",13," ")."\r\n";
+            
+                                    
+            // $print_str .= append_chars(substrwords('Discounts',18,""),"right",23," ")
+            //              .append_chars(numInt(($discounts)),"left",13," ")."\r\n";
+            // $print_str .= append_chars(substrwords('VAT',18,""),"right",23," ")
+            //              .append_chars(numInt(($less_vat)),"left",13," ")."\r\n";
+            // $print_str .= append_chars("","right",23," ").append_chars("-----------","left",13," ")."\r\n";
+            // $print_str .= append_chars(substrwords('GROSS SALES',18,""),"right",23," ")
+            //              .append_chars(numInt(($gross)),"left",13," ")."\r\n";
 
-            $print_str .= append_chars(substrwords('VOID SALES',18,""),"right",23," ")
-                         .append_chars(numInt(($void)),"left",13," ")."\r\n";
+            
 
             $print_str .= "\r\n";
             #TRANS COUNT
@@ -643,20 +680,6 @@ class Prints extends CI_Controller {
 
             $print_str .= "\r\n";
             $print_str .= "======================================"."\r\n";
-            $taxable = ($net_no_adds - ($tax + $no_tax + $zero_rated)); 
-            $print_str .= append_chars(substrwords('Taxable',18,""),"right",23," ")
-                         .append_chars(numInt(($taxable)),"left",13," ")."\r\n";
-            $total_net = $taxable + ($no_tax + $zero_rated) + $tax;
-            $print_str .= append_chars(substrwords('NonTaxable',18,""),"right",23," ")
-                         .append_chars(numInt(($no_tax)),"left",13," ")."\r\n";
-            $print_str .= append_chars(substrwords('ZeroRated',13,""),"right",23," ")
-                         .append_chars(numInt(($zero_rated)),"left",13," ")."\r\n";
-            $print_str .= append_chars(substrwords('VAT Amount',18,""),"right",23," ")
-                                     .append_chars(numInt(($tax)),"left",13," ")."\r\n";   
-            $print_str .= append_chars(substrwords('Total',18,""),"right",23," ")
-                                     .append_chars(numInt(($total_net)),"left",13," ")."\r\n";   
-
-            $print_str .= "\r\n";
             $print_str .= append_chars(substrwords('Invoice Start: ',18,""),"right",18," ").align_center('',5," ")
                          .append_chars(iSetObj($trans['first_ref'],'trans_ref'),"left",13," ")."\r\n";
             $print_str .= append_chars(substrwords('Invoice End: ',18,""),"right",18," ").align_center('',5," ")
@@ -665,12 +688,14 @@ class Prints extends CI_Controller {
                          .append_chars($trans['ref_count'],"left",13," ")."\r\n";  
             
             if($title_name == "ZREAD"){
-                $gt = $this->old_grand_total($post['from']);
+                // $gt = $this->old_grand_total($post['from']);
+                $gt = $this->old_grand_net_total($post['from']);
                 $print_str .= "\r\n";
                 $print_str .= append_chars(substrwords('OLD GT: ',18,""),"right",18," ").align_center('',5," ")
                              .append_chars(numInt($gt['old_grand_total']),"left",13," ")."\r\n";    
                 $print_str .= append_chars(substrwords('NEW GT: ',18,""),"right",18," ").align_center('',5," ")
-                             .append_chars( numInt($gt['old_grand_total']+$gross)  ,"left",13," ")."\r\n";                  
+                             .append_chars( numInt($gt['old_grand_total']+$net)  ,"left",13," ")."\r\n";                  
+                             // .append_chars( numInt($gt['old_grand_total']+$gross)  ,"left",13," ")."\r\n";                  
                 $print_str .= append_chars(substrwords('Z READ CTR: ',18,""),"right",18," ").align_center('',5," ")
                              .append_chars( $gt['ctr'] ,"left",13," ")."\r\n";                  
             }

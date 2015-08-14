@@ -112,6 +112,12 @@ function indexPage($needEod=false,$set){
 												$CI->make->button($text,array('id'=>$id.'-btn','class'=>'btn-block cpanel-btn-blue'));
 											$CI->make->eDivCol();
 										}
+										$CI->make->sDivCol(6,'left',0,array("style"=>'margin-bottom:10px;'));
+											$CI->make->button(fa('fa-forward fa-lg fa-fw')." Change To",array('id'=>'change-to-btn','class'=>'btn-block cpanel-btn-green'));
+										$CI->make->eDivCol();
+										$CI->make->sDivCol(6,'left',0,array("style"=>'margin-bottom:10px;'));
+											$CI->make->button(fa('fa-reply fa-lg fa-fw')." Back",array('id'=>'back-order-list-btn','class'=>'btn-block cpanel-btn-red'));
+										$CI->make->eDivCol();
 										$buttons = array("void"		=> fa('fa-ban fa-lg fa-fw')." Void",
 														 );
 										foreach ($buttons as $id => $text) {
@@ -119,13 +125,10 @@ function indexPage($needEod=false,$set){
 												$CI->make->button($text,array('id'=>$id.'-btn','class'=>'btn-block cpanel-btn-red'));
 											$CI->make->eDivCol();
 										}
-										$buttons = array(
-														 "back-order-list"		=> fa('fa-reply fa-lg fa-fw')." Back");
-										foreach ($buttons as $id => $text) {
-											$CI->make->sDivCol(12,'left',0,array("style"=>'margin-bottom:10px;'));
-												$CI->make->button($text,array('id'=>$id.'-btn','class'=>'btn-block cpanel-btn-red'));
-											$CI->make->eDivCol();
-										}
+										// $buttons = array(
+										// 				 "back-order-list"		=> fa('fa-reply fa-lg fa-fw')." Back");
+										// foreach ($buttons as $id => $text) {
+										// }
 									$CI->make->eDivRow();
 								$CI->make->eDivCol();
 							$CI->make->eDivRow();
@@ -150,7 +153,32 @@ function indexPage($needEod=false,$set){
 										$CI->make->button(fa('fa-reply fa-lg fa-fw')." Back",array('class'=>'btn-block cpanel-btn-orange cancel-reason-btn double'));
 									$CI->make->eDivCol();
 							$CI->make->eDivRow();
+							
+
 						$CI->make->eDiv();
+						$CI->make->sDiv(array('class'=>'change-to-div center-loads-div'));
+							$CI->make->sDivRow();
+								$CI->make->H(3,'Change Order To:',array('class'=>'text-center','style'=>'margin-top:10px;margin-bottom:15px;'));
+								// foreach (unserialize(SALE_TYPES) as $st) {
+								// 	$CI->make->sDivCol(4,'left',0,array("style"=>'margin-bottom:10px;'));
+								// 		$CI->make->button($st,array('ref'=>strtolower($st),'class'=>'btn-block cpanel-btn-blue change-to-btns double'));
+								// 	$CI->make->eDivCol();
+								// }
+								$ids = explode(',',$set->controls);
+								foreach($ids as $value){
+									$text = explode('=>',$value);
+									$text_ref=$text[1];
+									$texts=str_replace(' ', '', $text[1]);
+									$CI->make->sDivCol(4,'left',0,array("style"=>'margin-bottom:10px;'));
+										$CI->make->button(strtoupper($text_ref),array('ref'=>strtolower($texts),'class'=>'btn-block cpanel-btn-blue change-to-btns double'));
+									$CI->make->eDivCol();
+								}
+								$CI->make->sDivCol(4,'left',0,array("style"=>'margin-bottom:10px;'));
+										$CI->make->button(fa('fa-reply fa-lg fa-fw')." Back",array('class'=>'btn-block cpanel-btn-orange cancel-reason-btn double'));
+								$CI->make->eDivCol();
+							$CI->make->eDivRow();
+						$CI->make->eDiv();
+
 					$CI->make->eDiv();
 				$CI->make->eDivCol();
 				$CI->make->sDivCol(2,'left',0,array('class'=>'cpanel-right'));
@@ -1376,12 +1404,12 @@ function deliveryPage($det=null,$type='delivery'){
 }
 function tableTransfer($tables=array()){
 	$CI =& get_instance();
-	$CI->make->sDiv(array('id'=>'cashier-panel','style'=>'margin-top:30px;'));
+	$CI->make->sDiv(array('id'=>'cashier-panel','style'=>'margin-top:10px;','class'=>'div-no-spaces'));
 		$CI->make->hidden('to-table',null);
 		$CI->make->sDivRow();
 		ksort($tables);
 			foreach ($tables as $id => $opt) {
-				$CI->make->sDivCol(3,'left',0,array("style"=>'margin-bottom:10px;'));
+				$CI->make->sDivCol(3,'left',0,array("style"=>'margin:0px;'));
 					$CI->make->button($opt['name'],array('ref'=>$id,'class'=>'btn-block cpanel-btn-red reason-btns double'));
 				$CI->make->eDivCol();
 			}
