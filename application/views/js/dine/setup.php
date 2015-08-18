@@ -64,6 +64,37 @@ $(document).ready(function(){
 		$('#target').click(function(e){
 	    	$('#complogo').trigger('click');
 	    }).css('cursor', 'pointer');
+
+	    $('#upload-splsh-img').rPopFormFile({
+	    // $('#upload-splsh-img').rPopForm({
+	    	asJson	  : true,
+	    	hide	  : true,
+	    	onComplete: function(data){
+	    		if(data.msg == "Image uploaded"){
+		    		// rMsg(data.msg,'success');
+		    		location.reload();
+	    		}
+		    	else{
+		    		rMsg(data.msg,'error');
+		    	}
+	    	}
+	    });
+	    $('.del-spl-btn').click(function(){
+	    	var img_id = $(this).attr('ref');
+	    	var img = $(this);
+	    	$.post(baseUrl+'setup/delete_splash_img/'+img_id,function(data){
+	    		if(data.error == ""){
+		    		img.parent().remove();
+	    			rMsg('Image removed.','success');
+	    		}
+	    		else{
+	    			rMsg(data.error,'error');
+	    		}
+	    	},'json');
+	    	// alert(data);
+	    	// });
+	    	return false;
+	    });
 	<?php elseif($use_js == 'referencesJs'): ?>
 		// alert('asd');
 		$('.save_btn').click(function(){
@@ -85,6 +116,23 @@ $(document).ready(function(){
 
 			return false;
 		});
+	<?php elseif($use_js == 'uploadSplashImagePopJs'): ?>
+		function readURL(input) {
+        	if (input.files && input.files[0]) {
+	            var reader = new FileReader();
+	            reader.onload = function (e) {
+	                $('#target').attr('src', e.target.result);
+	            }
+	            reader.readAsDataURL(input.files[0]);
+	        }
+	    }
+    	$("#fileUpload").change(function(){
+	        readURL(this);
+	    });
+	    $('#select-img').click(function(e){
+	    	$('#fileUpload').trigger('click');
+
+	    }).css('cursor', 'pointer');
 	<?php endif; ?>
 });
 </script>

@@ -9,14 +9,58 @@ class Setup extends CI_Controller {
         $details = $this->setup_model->get_details(1);
 		$det = $details[0];
         $set = $this->cashier_model->get_pos_settings();
+        $splashes = $this->site_model->get_image(null,null,'splash_images');
+
         $data = $this->syter->spawn('setup');
         $data['page_subtitle'] = 'Edit Branch Setup';
-        $data['code'] = makeDetailsForm($det,$set);
+        $data['code'] = makeDetailsForm($det,$set,$splashes);
         // $data['add_js'] = array('js/plugins/timepicker/bootstrap-timepicker.min.js');
         // $data['add_css'] = array('css/timepicker/bootstrap-timepicker.min.css');
 		$data['load_js'] = 'dine/setup.php';
 		$data['use_js'] = 'detailsJs';
         $this->load->view('page',$data);
+    }
+    public function upload_splash_images(){
+        $this->load->helper('dine/setup_helper');
+        $this->load->model('dine/settings_model');
+        // $data['code'] = makeTableUploadForm($branch);
+        
+        $data['code'] = makeImageUploadForm();
+        $data['load_js'] = 'dine/setup.php';
+        $data['use_js'] = 'uploadSplashImagePopJs';
+        $this->load->view('load',$data);
+    }
+    public function delete_splash_img($img_id=null){
+        $error = "";
+        if($img_id != ""){
+            $this->site_model->delete_tbl('images',array('img_id'=>$img_id));
+        }
+        else{
+            $error = "No Image selected";
+        }
+        echo json_encode(array('error'=>$error));
+    }    
+    public function upload_splash_images_db(){
+        $this->load->model('dine/settings_model');
+        $image = null;
+        $upload = 'success';
+        $msg = "";
+        $src ="";
+
+        if(is_uploaded_file($_FILES['fileUpload']['tmp_name'])) {
+            $file = file_get_contents($_FILES['fileUpload']['tmp_name']);
+            $items = array(
+                "img_blob"=>$file,
+                "img_tbl"=>'splash_images',
+            );
+            $id = $this->site_model->add_tbl('images',$items);
+            $msg =  "Image uploaded";
+            site_alert($msg,'success');
+        }
+        else{
+            $msg =  "Invalid Image";
+        }
+        echo json_encode(array('msg'=>$msg));
     }
     public function details_db(){
         $this->load->model('dine/setup_model');

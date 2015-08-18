@@ -1,5 +1,5 @@
 <?php
-function makeLoginPage($error = null,$unclosed_shifts=array(),$rotten_shifts=array(),$end_shift=false){
+function makeLoginPage($error = null,$unclosed_shifts=array(),$rotten_shifts=array(),$end_shift=false,$splashes=array()){
 	$CI =& get_instance();
 		if($end_shift){
 			$CI->make->hidden('shift_end',$end_shift);
@@ -16,15 +16,23 @@ function makeLoginPage($error = null,$unclosed_shifts=array(),$rotten_shifts=arr
 							$CI->make->sDiv(array('style'=>'margin:30px;'));
 							$CI->make->sBox('default',array('class'=>'box-solid'));
 								$CI->make->sBoxBody();
-									$img = array(
-											array('url'=>base_url().'img/splashPages/splashPage1.png','params'=>array('style'=>'height:500px;width:750px;')),
-											array('url'=>base_url().'img/splashPages/splashPage2.png','params'=>array('style'=>'height:500px;width:750px;')),
-											array('url'=>base_url().'img/splashPages/splashPage3.png','params'=>array('style'=>'height:500px;width:750px;')),
-											array('url'=>base_url().'img/splashPages/splashPage4.png','params'=>array('style'=>'height:500px;width:750px;')),
-											// array('url'=>base_url().'img/splashPages/splashPage5.png','params'=>array('style'=>'height:500px;width:750px;')),
-											// array('url'=>base_url().'img/splashPages/splashPage6.png','params'=>array('style'=>'height:500px;width:750px;'))
-									);
-									$CI->make->carousel('carousel',$img);
+									// $img = array(
+									// 		array('url'=>base_url().'img/splashPages/splashPage1.png','params'=>array('style'=>'height:500px;width:750px;')),
+									// 		array('url'=>base_url().'img/splashPages/splashPage2.png','params'=>array('style'=>'height:500px;width:750px;')),
+									// 		array('url'=>base_url().'img/splashPages/splashPage3.png','params'=>array('style'=>'height:500px;width:750px;')),
+									// 		array('url'=>base_url().'img/splashPages/splashPage4.png','params'=>array('style'=>'height:500px;width:750px;')),
+									// 		// array('url'=>base_url().'img/splashPages/splashPage5.png','params'=>array('style'=>'height:500px;width:750px;')),
+									// 		// array('url'=>base_url().'img/splashPages/splashPage6.png','params'=>array('style'=>'height:500px;width:750px;'))
+									// );
+									foreach ($splashes as $res) {
+										$src ="data:image/jpeg;base64,".base64_encode($res->img_blob);
+										$img[] = array(
+											'url'=>$src,'params'=>array('style'=>'height:500px;width:750px;')
+										);
+									}
+									if(count($splashes) > 0){
+										$CI->make->carousel('carousel',$img);
+									}
 								$CI->make->eBoxBody();
 							$CI->make->eBox();
 							$CI->make->eDiv();

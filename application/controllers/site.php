@@ -310,7 +310,9 @@ class Site extends Reads {
 		    	$shifts_open = $this->clock_model->get_user_details($users);	    		
 		}
         // unset($_SESSION['load']);
-		$data['code'] = makeLoginPage($error,$shifts_open,$rot_shifts,$end_shift);
+		$splashes = $this->site_model->get_image(null,null,'splash_images');
+
+		$data['code'] = makeLoginPage($error,$shifts_open,$rot_shifts,$end_shift,$splashes);
 		$data['add_css'] = array('css/pos.css','css/onscrkeys.css','css/virtual_keyboard.css');
 		$data['add_js'] = array('js/jquery.keyboard.extension-navigation.min.js','js/jquery.keyboard.min.js','js/virtual_keyboard.js','js/on_screen_keys.js');
 		$data['load_js'] = 'site/login';

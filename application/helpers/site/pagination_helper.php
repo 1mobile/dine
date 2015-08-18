@@ -59,7 +59,7 @@ function paginate($url='#',$total_rows,$limit,$pagi){
 							$CI->make->A('...','#',array());
 						$CI->make->eLi();
 						$CI->make->sLi();
-							$CI->make->A($lmake1,$url."/".$lmake1,array('class'=>'ragi','pagi'=>$lmake1));
+							$CI->make->A($lastpage-1,$url."/".$lastpage-1,array('class'=>'ragi','pagi'=>$lastpage-1));
 						$CI->make->eLi();
 						$CI->make->sLi();
 							$CI->make->A($lastpage,$url."/".$lastpage,array('class'=>'ragi','pagi'=>$lastpage));
@@ -92,7 +92,7 @@ function paginate($url='#',$total_rows,$limit,$pagi){
 							$CI->make->A('...','#',array());
 						$CI->make->eLi();
 						$CI->make->sLi();
-							$CI->make->A($lmake1,$url."/".$lmake1,array('class'=>'ragi','pagi'=>$lmake1));
+							$CI->make->A($lastpage-1,$url."/".$lastpage-1,array('class'=>'ragi','pagi'=>$lastpage-1));
 						$CI->make->eLi();
 						$CI->make->sLi();
 							$CI->make->A($lastpage,$url."/".$lastpage,array('class'=>'ragi','pagi'=>$lastpage));

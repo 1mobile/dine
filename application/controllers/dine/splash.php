@@ -25,7 +25,8 @@ class Splash extends CI_Controller {
 	}
 	public function commercial(){
 		$data = $this->syter->spawn(null,false);
-        $data['code'] = commercialPage();
+        $splashes = $this->site_model->get_image(null,null,'splash_images');
+        $data['code'] = commercialPage($splashes);
         $data['add_css'] = array('css/pos.css','css/onscrkeys.css','css/virtual_keyboard.css', 'css/cashier.css');
         $data['add_js'] = array('js/on_screen_keys.js','js/jquery.keyboard.extension-navigation.min.js','js/jquery.keyboard.min.js');
         //$data['add_css'] = 'css/cashier.css';
@@ -35,7 +36,8 @@ class Splash extends CI_Controller {
 	}
 	public function transactions(){
         $data = $this->syter->spawn(null,false);
-        $data['code'] = transactionPage();
+        $splashes = $this->site_model->get_image(null,null,'splash_images');
+        $data['code'] = transactionPage($splashes);
         $data['add_css'] = array('css/pos.css','css/onscrkeys.css','css/virtual_keyboard.css', 'css/cashier.css');
         $data['add_js'] = array('js/on_screen_keys.js','js/jquery.keyboard.extension-navigation.min.js','js/jquery.keyboard.min.js');
         //$data['add_css'] = 'css/cashier.css';

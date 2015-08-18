@@ -308,6 +308,7 @@ class Endofday extends Cashier {
                 "date_from"=>$date_from,
                 "calendar"=>$date_from,
                 "read_date"=>$read_date,
+                "use_curr"=>1,
                 "title"=>"ZREAD"
             );
             $data['code'] = endDay($details,$error);

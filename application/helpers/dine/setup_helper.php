@@ -1,6 +1,6 @@
 <?php
 //-----------Branch Details-----start-----allyn
-function makeDetailsForm($det=array(),$set=array()){
+function makeDetailsForm($det=array(),$set=array(),$splashes=array()){
 	$CI =& get_instance();
 
 	$CI->make->sDivRow();
@@ -11,6 +11,7 @@ function makeDetailsForm($det=array(),$set=array()){
 						$tabs = array(
 							fa('fa-info-circle')." Details"=>array('href'=>'#details'),
 							fa('fa-cogs')." POS"=>array('href'=>'#setup'),
+							fa('fa-image')." Images"=>array('href'=>'#image'),
 						);
 					$CI->make->tabHead($tabs,null,array());
 					$CI->make->sTabBody();
@@ -166,6 +167,31 @@ function makeDetailsForm($det=array(),$set=array()){
 								$CI->make->eDivRow();
 							$CI->make->eForm();
 						$CI->make->eTabPane();
+						$CI->make->sTabPane(array('id'=>'image','class'=>'tab-pane'));
+							$CI->make->H(3,'Splash Pages');
+							$CI->make->append('<hr style="margin-top:0px;">');
+							$CI->make->sDivRow();
+								$CI->make->sDivCol(12,'right');
+									$btnMsg = fa('fa-upload').' Upload Image';
+									$CI->make->A($btnMsg,'setup/upload_splash_images/',array(
+																				'id'=>'upload-splsh-img',
+																				'rata-title'=>'Splash Image Upload',
+																				'rata-pass'=>'setup/upload_splash_images_db',
+																				'rata-form'=>'upload_image_form',
+																				'class'=>'btn btn-primary'
+																			));
+								$CI->make->eDivCol();
+							$CI->make->eDivRow();
+							$CI->make->sDivRow();
+								foreach ($splashes as $res) {
+									$CI->make->sDivCol(4);
+										$src ="data:image/jpeg;base64,".base64_encode($res->img_blob);
+										$CI->make->img($src,array('style'=>'width:100%;margin-bottom:0px;margin-top:10px;','class'=>'thumbnail'));
+										$CI->make->A(fa('fa-trash').'Delete','#',array('class'=>'del-spl-btn btn btn-danger btn-block','ref'=>$res->img_id,'style'=>'margin:0px !important;'));
+									$CI->make->eDivCol();
+								}
+							$CI->make->eDivRow();
+						$CI->make->eTabPane();
 					$CI->make->eTabBody();
 				$CI->make->eTab();
 				// $CI->make->eBoxBody();
@@ -173,6 +199,31 @@ function makeDetailsForm($det=array(),$set=array()){
 		$CI->make->eDivCol();
 	$CI->make->eDivRow();
 
+	return $CI->make->code();
+}
+function makeImageUploadForm($det=null){
+	$CI =& get_instance();
+		$CI->make->sForm("setup/upload_splash_images_db",array('id'=>'upload_image_form','enctype'=>'multipart/form-data'));
+			$CI->make->sDivRow(array('style'=>'margin-bottom:10px;'));
+				$CI->make->sDivCol();
+					$CI->make->A(fa('fa-picture-o').' Select an Image','#',array(
+															'id'=>'select-img',
+															'class'=>'btn btn-primary'
+														));
+					$CI->make->append('<br>');
+				$CI->make->eDivCol();
+			$CI->make->eDivRow();
+			$CI->make->sDivRow();
+				$CI->make->sDivCol();
+					$thumb = base_url().'img/noimage.png';
+					// if(iSetObj($det,'image')  != ""){
+					// 	$thumb = base_url().'uploads/'.iSetObj($det,'image');
+					// }
+					$CI->make->img('',array('class'=>'media-object thumbnail','id'=>'target','style'=>'width:100%;'));
+					$CI->make->file('fileUpload',array('style'=>'display:none;'));
+				$CI->make->eDivCol();
+	    	$CI->make->eDivRow();
+		$CI->make->eForm();
 	return $CI->make->code();
 }
 //-----------Branch References-----end-----allyn

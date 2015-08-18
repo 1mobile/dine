@@ -40,7 +40,7 @@ $nav['pos_promos'] = array('title'=>'<i class="fa fa-tags"></i> <span>Promos</sp
 // $nav['dtr'] = array('title'=>'<i class="fa fa-clock-o"></i> <span>DTR</span>','path'=>$dtr,'exclude'=>0);
 	// <i class="fa fa-gift"></i>
 	// <i class="fa fa-tag"></i>
-	$reps['act_sales'] = array('title'=>'Sales','path'=>'reports/sales_rep_ui','exclude'=>0);
+	// $reps['act_sales'] = array('title'=>'Sales','path'=>'reports/sales_rep_ui','exclude'=>0);
 	$reps['act_receipts'] = array('title'=>'Receipts','path'=>'reprint','exclude'=>0);
 	$reps['act_logs'] = array('title'=>'Activity Logs','path'=>'reports/activity_logs_ui','exclude'=>0);
 	$reps['drawer_count'] = array('title'=>'Drawer Count','path'=>'reports/drawer_count_ui','exclude'=>0);

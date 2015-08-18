@@ -152,14 +152,14 @@ class Prints extends CI_Controller {
                 $net_no_adds = ($net)-$charges-$local_tax;
 
                 $taxable = ( ($net_no_adds + $no_tax_disc) - ($tax + $no_tax)); 
-                $print_str .= append_chars(substrwords('Taxable',18,""),"right",23," ")
+                $print_str .= append_chars(substrwords('VAT SALES',18,""),"right",23," ")
                              .append_chars(numInt(($taxable)),"left",13," ")."\r\n";
                 $total_net = $taxable + $no_tax + $zero_rated + $tax;
-                $print_str .= append_chars(substrwords('NonTaxable',18,""),"right",23," ")
+                $print_str .= append_chars(substrwords('VAT EXEMPT SALES',18,""),"right",23," ")
                              .append_chars(numInt(($no_tax)),"left",13," ")."\r\n";
-                $print_str .= append_chars(substrwords('ZeroRated',13,""),"right",23," ")
+                $print_str .= append_chars(substrwords('ZERO RATED',13,""),"right",23," ")
                              .append_chars(numInt(($zero_rated)),"left",13," ")."\r\n";
-                $print_str .= append_chars(substrwords('VAT Amount',18,""),"right",23," ")
+                $print_str .= append_chars(substrwords('VAT',18,""),"right",23," ")
                                          .append_chars(numInt(($tax)),"left",13," ")."\r\n";   
                 $print_str .= append_chars("","right",23," ").append_chars("-----------","left",13," ")."\r\n";
                 $print_str .= append_chars(substrwords('Total',18,""),"right",23," ")
@@ -423,7 +423,7 @@ class Prints extends CI_Controller {
 
             $print_str .= "\r\n======================================"."\r\n";
             $net_no_adds = $net-$charges-$local_tax;
-            $print_str .= append_chars(substrwords('NET SALES',18,""),"right",25," ")
+            $print_str .= append_chars(substrwords('TOTAL SALES',18,""),"right",25," ")
                          .append_chars(numInt(($net)),"left",13," ")."\r\n";
             $txt = numInt(($charges));
             if($charges > 0)
@@ -496,13 +496,13 @@ class Prints extends CI_Controller {
                 $print_str .= align_center($post['employee'],38," ")."\r\n";
             
             $loc_txt = numInt(($local_tax));
-            if($local_tax > 0)
-                $loc_txt = "(".numInt(($local_tax)).")";
+            // if($local_tax > 0)
+            //     $loc_txt = "(".numInt(($local_tax)).")";
             $net_no_adds = $net-($charges+$local_tax);
             $nontaxable = $no_tax - $no_tax_disc;
             $taxable =   ($net_no_adds - ($tax + ($nontaxable+$zero_rated))  );
             $total_net = ($taxable) + ($nontaxable+$zero_rated) + $tax + $local_tax;
-
+            $add_gt = $taxable+$nontaxable+$zero_rated;
             // $taxable = ($net_no_adds - ($tax + $no_tax + $zero_rated)); 
             $print_str .= "\r\n";
             $print_str .= append_chars(substrwords('NET SALES',18,""),"right",23," ")
@@ -694,7 +694,8 @@ class Prints extends CI_Controller {
                 $print_str .= append_chars(substrwords('OLD GT: ',18,""),"right",18," ").align_center('',5," ")
                              .append_chars(numInt($gt['old_grand_total']),"left",13," ")."\r\n";    
                 $print_str .= append_chars(substrwords('NEW GT: ',18,""),"right",18," ").align_center('',5," ")
-                             .append_chars( numInt($gt['old_grand_total']+$net)  ,"left",13," ")."\r\n";                  
+                             .append_chars( numInt($gt['old_grand_total']+$net_no_adds)  ,"left",13," ")."\r\n";                  
+                             // .append_chars( numInt($gt['old_grand_total']+$net)  ,"left",13," ")."\r\n";                  
                              // .append_chars( numInt($gt['old_grand_total']+$gross)  ,"left",13," ")."\r\n";                  
                 $print_str .= append_chars(substrwords('Z READ CTR: ',18,""),"right",18," ").align_center('',5," ")
                              .append_chars( $gt['ctr'] ,"left",13," ")."\r\n";                  
@@ -948,7 +949,7 @@ class Prints extends CI_Controller {
             $date = "";
             $range = $this->input->post('calendar_range');
             $calendar = $this->input->post('calendar');
-            // $calendar = '2015-08-11';
+            // $calendar = '2015-08-18 07:23:02';
             // $range = '2015/08/11 12:00 AM to 2015/08/13 12:00 AM';
             $title = "";
             if($this->input->post('title'))
@@ -1037,8 +1038,12 @@ class Prints extends CI_Controller {
             if($this->input->post('calendar')){
                 $date = $this->input->post('calendar');
                 $from = sql2Date($date);
-                if($from == $today)
+                if($from == $today){
                     $use = true;
+                }
+                if($this->input->post('use_curr')){
+                    $use = $this->input->post('use_curr');
+                }
             }
             $shift = $this->input->post('shift_id');
             if($shift != ""){
@@ -1085,6 +1090,7 @@ class Prints extends CI_Controller {
             $void_amount = 0;
             $types = array();
             $ordsnums = array();
+            $all_orders = array();
             foreach ($orders as $sales_id => $sale) {
                 if($sale->type_id == 10){
                     if($sale->trans_ref != "" && $sale->inactive == 0){
