@@ -7,7 +7,7 @@ class Reads extends Prints {
         $this->load->helper('core/string_helper');
         $this->load->helper('dine/login_helper');
         $this->load->model('site/site_model');
-	}
+    }
     public function manual_send_to_rob(){
         $data = $this->syter->spawn('send_to_rob');
         $files = $this->cashier_model->get_rob_files();
@@ -1624,10 +1624,11 @@ class Reads extends Prints {
             $m = date('m',strtotime($zread['read_date']));
             $d = date('d',strtotime($zread['read_date']));
             $mo = array('01'=>'1','02'=>'2','03'=>'3','04'=>'4','05'=>'5','06'=>'6','07'=>'7','08'=>'8','09'=>'9','10'=>'A','11'=>'B','12'=>'C');
-            if (!file_exists("araneta_files/trans_list/".$year."/".$month."/")) {   
-                mkdir("araneta_files/trans_list/".$year."/".$month, 0777, true);
+            if (!file_exists("C:/Araneta/".$year."/")) {   
+                mkdir("C:/Araneta/".$year, 0777, true);
             }
-            $filename = "araneta_files/trans_list/".$year."/".$month."/".$file."L.".$mo[$m].$d; 
+
+            $filename = "C:/Araneta/".$year."/".$file."L.".$mo[$m].$d; 
             $curr = false;
             $sales = $trans['sales'];
             $settled = $trans['sales']['settled']['orders'];
@@ -1641,7 +1642,9 @@ class Reads extends Prints {
                 $print_str .= TERMINAL_ID." ";
                 $print_str .= numInt(0)." ";#GROSS
                 $trans_discounts = $this->discounts_sales($sales_id,$curr);
-                $discounts = $trans_discounts['total']; 
+                $discounts = $trans_discounts['total'];
+                $tax_disc = $trans_discounts['tax_disc_total']; 
+                $no_tax_disc = $trans_discounts['no_tax_disc_total'];  
                 $print_str .= numInt($discounts)." ";
                 $print_str .= numInt(0)." ";#VOID
                 $print_str .= numInt(0)." ";#REFUND
@@ -1672,15 +1675,28 @@ class Reads extends Prints {
                 $no_tax = $trans_no_tax['total'];
                 $zero_rated = $trans_zero_rated['total'];
                 $no_tax -= $zero_rated;
-
-                $net_no_adds = $set->total_amount-$charges-$local_tax;
-                $taxable = ($net_no_adds - ($tax + $no_tax)); 
-
+                $no_tax = $no_tax - $no_tax_disc;
+                $net_no_adds = $set->total_amount-($charges+$local_tax);
+                // $taxable = ($net_no_adds - ($tax + $no_tax)); 
+                $taxable =   ($net_no_adds - ($tax + ($no_tax+$zero_rated))  );
                 $print_str .= numInt($taxable)." ";
                 $print_str .= numInt($no_tax)." ";
-                $print_str .= numInt($set->total_amount)." ";
-                $print_str .= numInt($charges)." ";
-                $print_str .= numInt($set->total_amount)." ";
+                // $print_str .= numInt($set->total_amount          )." ";
+                $print_str .= numInt($net_no_adds)." ";
+
+                $payments = $this->payment_sales($sales_id,$curr);
+                $payments_types = $payments['types'];
+                $cash = 0;
+                $opay = 0;
+                foreach ($payments_types as $type => $val) {
+                    if($type == 'cash' ){
+                        $cash += $val['amount'];
+                    }
+                    else
+                        $opay += $val['amount'];
+                }
+                $print_str .= numInt($opay)." ";
+                $print_str .= numInt($cash)." ";
                 $print_str .= "\r\n";
             }
             // echo "<pre>".$print_str."</pre>";
@@ -1696,17 +1712,18 @@ class Reads extends Prints {
             $m = date('m',strtotime($zread['read_date']));
             $d = date('d',strtotime($zread['read_date']));
             if(!$monthtype){
-                if (!file_exists("araneta_files/daily/".$year."/".$month."/")) {   
-                    mkdir("araneta_files/daily/".$year."/".$month, 0777, true);
+                if (!file_exists("C:/Araneta/".$year."/")) {   
+                    mkdir("C:/Araneta/".$year."/", 0777, true);
                 }
-                $filename = "araneta_files/daily/".$year."/".$month."/".$file."S.".$mo[$m].$d; 
+                $filename = "C:/Araneta/".$year."/".$file."S.".$mo[$m].$d; 
             }
             else{
-                if (!file_exists("araneta_files/monthly/".$year."/".$month."/")) {   
-                    mkdir("araneta_files/monthly/".$year."/".$month, 0777, true);
+                if (!file_exists("C:/Araneta/".$year."/")) {   
+                    mkdir("C:/Araneta/".$year."/", 0777, true);
                 }
-                $filename = "araneta_files/monthly/".$year."/".$month."/".$file."C.".$mo[$m]."00";    
+                $filename = "C:/Araneta/".$year."/".$file."C.".$mo[$m]."00";    
             }
+            
 
             $curr = false;
             $old_gt = $this->old_grand_net_total($zread['from']);
@@ -1714,6 +1731,8 @@ class Reads extends Prints {
             $sales = $trans['sales'];
             $trans_discounts = $this->discounts_sales($sales['settled']['ids'],$curr);
             $discounts = $trans_discounts['total']; 
+            $tax_disc = $trans_discounts['tax_disc_total']; 
+            $no_tax_disc = $trans_discounts['no_tax_disc_total']; 
             $total_void = 0;
             if(isset($trans['sales']['void']['orders']) && count($trans['sales']['void']['orders']) > 0){
                 $void = $trans['sales']['void']['orders'];
@@ -1743,12 +1762,32 @@ class Reads extends Prints {
             }
             $trans_no_tax = $this->no_tax_sales($sales['settled']['ids'],$curr);
             $trans_zero_rated = $this->zero_rated_sales($sales['settled']['ids'],$curr);
+
+
             $no_tax = $trans_no_tax['total'];
             $zero_rated = $trans_zero_rated['total'];
             $no_tax -= $zero_rated;
+            $net = $trans['net'];
+            // $net_no_adds = $trans['net']-$charges-$local_tax;
+            // $taxable = ($net_no_adds - ($tax + $no_tax)); 
 
-            $net_no_adds = $trans['net']-$charges-$local_tax;
-            $taxable = ($net_no_adds - ($tax + $no_tax)); 
+            $loc_txt = numInt(($local_tax));
+            $net_no_adds = $net-($charges+$local_tax);
+            $nontaxable = $no_tax - $no_tax_disc;
+            $taxable =   ($net_no_adds - ($tax + ($nontaxable+$zero_rated))  );
+            $total_net = ($taxable) + ($nontaxable+$zero_rated) + $tax + $local_tax;
+
+            $payments = $this->payment_sales($sales['settled']['ids'],$curr);
+            $payments_types = $payments['types'];
+            $cash = 0;
+            $opay = 0;
+            foreach ($payments_types as $type => $val) {
+                if($type == 'cash' ){
+                    $cash += $val['amount'];
+                }
+                else
+                    $opay += $val['amount'];
+            }
             #########################
             #### GENERATE TEXT FILE
                 $print_str .= $araneta->space_code." ";
@@ -1765,9 +1804,9 @@ class Reads extends Prints {
                 $print_str .= numInt($oc)." ";
                 $print_str .= numInt($sc)." ";
                 $print_str .= numInt($taxable)." ";
-                $print_str .= numInt($no_tax)." ";
-                $print_str .= numInt($charges+$local_tax)." ";
-                $print_str .= numInt($net_no_adds)." ";
+                $print_str .= numInt($nontaxable)." ";
+                $print_str .= numInt($opay)." ";
+                $print_str .= numInt($cash)." ";
                 
                 $first_ref = iSetObj($trans['first_ref'],'trans_ref',$trans['first_ref']);
                 $last_ref = iSetObj($trans['last_ref'],'trans_ref',$trans['last_ref']);
@@ -1783,6 +1822,7 @@ class Reads extends Prints {
                 for ($i=0; $i <= 10; $i++) { 
                     $print_str .= numInt(0)." ";
                 }
+            
             $fp = fopen($filename, "w+");
             fwrite($fp,$print_str);
             fclose($fp); 

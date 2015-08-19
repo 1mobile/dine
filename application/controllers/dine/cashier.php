@@ -3384,6 +3384,7 @@ class Cashier extends Reads {
                 }
             }
         }
+        $this->update_tbl_activity(null,true);
         if($asJson)
             echo json_encode(array('error'=>$error,'act'=>$act,'id'=>$sales_id,'type'=>$type));
         else

@@ -692,7 +692,7 @@ class Prints extends CI_Controller {
                 $gt = $this->old_grand_net_total($post['from']);
                 $print_str .= "\r\n";
                 $print_str .= append_chars(substrwords('OLD GT: ',18,""),"right",18," ").align_center('',5," ")
-                             .append_chars(numInt($gt['old_grand_total']),"left",13," ")."\r\n";    
+                             .append_chars(numInt( $gt['old_grand_total'] - ($charges + $local_tax) ),"left",13," ")."\r\n";    
                 $print_str .= append_chars(substrwords('NEW GT: ',18,""),"right",18," ").align_center('',5," ")
                              .append_chars( numInt($gt['old_grand_total']+$net_no_adds)  ,"left",13," ")."\r\n";                  
                              // .append_chars( numInt($gt['old_grand_total']+$net)  ,"left",13," ")."\r\n";                  
