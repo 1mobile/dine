@@ -1847,35 +1847,40 @@ $(document).ready(function(){
 				$('.select-discounts-lists').html(data.code);
 				$.each(data.ids,function(id,opt){
 					$('#item-disc-btn-'+id).click(function(){
-						loadsDiv('discount',null,null,null);
-						$('.discount-div .title').text($(this).text());
-						$('.discount-div #rate-txt').number(opt.disc_rate,2);
-						$('#disc-disc-id').val(opt.disc_id);
-						$('#disc-disc-rate').val(opt.disc_rate);
-						$('#disc-disc-code').val(opt.disc_code);
-						$('#disc-no-tax').val(opt.no_tax);
-						$('#disc-guests').val(opt.guest);
-						$.post(baseUrl+'cashier/load_disc_persons/'+opt.disc_code,function(data){
-							$('.disc-persons-list-div').html(data.code);
-							$.each(data.items,function(code,opt){
-								$("#disc-person-"+code).click(function(){
-									var lin = $(this);
-									$.post(baseUrl+'cashier/remove_person_disc/'+opt.disc+'/'+code,function(data){
-										lin.remove();
-										rMsg('Person Removed.','success');
-										transTotal();
+						var idisc = $(this);
+						$.callManager({
+		 					success : function(){
+								loadsDiv('discount',null,null,null);
+								$('.discount-div .title').text(idisc.text());
+								$('.discount-div #rate-txt').number(opt.disc_rate,2);
+								$('#disc-disc-id').val(opt.disc_id);
+								$('#disc-disc-rate').val(opt.disc_rate);
+								$('#disc-disc-code').val(opt.disc_code);
+								$('#disc-no-tax').val(opt.no_tax);
+								$('#disc-guests').val(opt.guest);
+								$.post(baseUrl+'cashier/load_disc_persons/'+opt.disc_code,function(data){
+									$('.disc-persons-list-div').html(data.code);
+									$.each(data.items,function(code,opt){
+										$("#disc-person-"+code).click(function(){
+											var lin = $(this);
+											$.post(baseUrl+'cashier/remove_person_disc/'+opt.disc+'/'+code,function(data){
+												lin.remove();
+												rMsg('Person Removed.','success');
+												transTotal();
+											});
+											return false;
+										});
 									});
-									return false;
-								});
-							});
-						},'json');
-						// if (typeof opt.name != 'undefined') {
-						// 	$('#disc-cust-name').val(opt.name);
-						// 	$('#disc-cust-guest').val(opt.guest);
-						// 	$('#disc-guests').val(opt.guest);
-						// 	$('#disc-cust-code').val(opt.code);
-						// 	$('#disc-cust-bday').val(opt.bday);
-						// }
+								},'json');
+								// if (typeof opt.name != 'undefined') {
+								// 	$('#disc-cust-name').val(opt.name);
+								// 	$('#disc-cust-guest').val(opt.guest);
+								// 	$('#disc-guests').val(opt.guest);
+								// 	$('#disc-cust-code').val(opt.code);
+								// 	$('#disc-cust-bday').val(opt.bday);
+								// }
+		 					}	
+		 				});
 						return false;
 					});
 				});

@@ -505,18 +505,11 @@ class Prints extends CI_Controller {
             $add_gt = $taxable+$nontaxable+$zero_rated;
             // $taxable = ($net_no_adds - ($tax + $no_tax + $zero_rated)); 
             $print_str .= "\r\n";
+            $nsss = $taxable +  $nontaxable +  $zero_rated; 
             $print_str .= append_chars(substrwords('NET SALES',18,""),"right",23," ")
-                         .append_chars(numInt(($taxable)),"left",13," ")."\r\n";
-            $print_str .= append_chars(substrwords('VAT EXEMPT SALES',18,""),"right",23," ")
-                         .append_chars(numInt(($nontaxable)),"left",13," ")."\r\n";
-            $print_str .= append_chars(substrwords('ZERO RATED',13,""),"right",23," ")
-                         .append_chars(numInt(($zero_rated)),"left",13," ")."\r\n";
+                         .append_chars(numInt(($nsss)),"left",13," ")."\r\n";
             $print_str .= append_chars(substrwords('VAT',18,""),"right",23," ")
                                      .append_chars(numInt($tax),"left",13," ")."\r\n";  
-            // $print_str .= append_chars(substrwords('VAT EXEMPT',18,""),"right",23," ")
-            //                          .append_chars(numInt($less_vat),"left",13," ")."\r\n";  
-            // $print_str .= append_chars(substrwords('VAT',18,""),"right",23," ")
-            //                          .append_chars($tax,"left",13," ")."\r\n";  
             $print_str .= append_chars(substrwords('Local Tax',18,""),"right",23," ")
                          .append_chars($loc_txt,"left",13," ")."\r\n";  
             $print_str .= append_chars("","right",23," ").append_chars("-----------","left",13," ")."\r\n";                         
@@ -524,31 +517,6 @@ class Prints extends CI_Controller {
                                      .append_chars(numInt(($total_net)),"left",13," ")."\r\n";   
             $print_str .= append_chars(substrwords('VOID SALES',18,""),"right",23," ")
                          .append_chars(numInt(($void)),"left",13," ")."\r\n";
-
-
-            // $print_str .= "\r\n";
-            // $ns = $net-$charges;
-            // $print_str .= append_chars(substrwords('NET SALES',18,""),"right",23," ")
-            //              .append_chars(numInt(($ns)),"left",13," ")."\r\n";
-            ##############
-            ## OLD 
-            // $print_str .= append_chars(substrwords('NET SALES',18,""),"right",23," ")
-            //              .append_chars(numInt(($net)),"left",13," ")."\r\n";
-            // $txt = numInt(($charges));
-            // if($charges > 0)
-            //     $txt = "(".numInt(($charges)).")";
-            // $print_str .= append_chars(substrwords('Charges',18,""),"right",23," ")
-            //              .append_chars($txt,"left",13," ")."\r\n";
-
-            
-                                    
-            // $print_str .= append_chars(substrwords('Discounts',18,""),"right",23," ")
-            //              .append_chars(numInt(($discounts)),"left",13," ")."\r\n";
-            // $print_str .= append_chars(substrwords('VAT',18,""),"right",23," ")
-            //              .append_chars(numInt(($less_vat)),"left",13," ")."\r\n";
-            // $print_str .= append_chars("","right",23," ").append_chars("-----------","left",13," ")."\r\n";
-            // $print_str .= append_chars(substrwords('GROSS SALES',18,""),"right",23," ")
-            //              .append_chars(numInt(($gross)),"left",13," ")."\r\n";
 
             
 
@@ -621,6 +589,8 @@ class Prints extends CI_Controller {
                 $print_str .= "-----------------"."\r\n";
                 $print_str .= append_chars(substrwords('Total Discounts',18,""),"right",18," ").align_center($qty,5," ")
                               .append_chars(numInt($discounts),"left",13," ")."\r\n"; 
+                $print_str .= append_chars(substrwords('VAT EXEMPT',18,""),"right",23," ")
+                                         .append_chars(numInt($less_vat),"left",13," ")."\r\n";                
             $print_str .= "\r\n";
             #PAYMENTS
                 $payments_types = $payments['types'];
@@ -680,19 +650,29 @@ class Prints extends CI_Controller {
 
             $print_str .= "\r\n";
             $print_str .= "======================================"."\r\n";
+            $print_str .= append_chars(substrwords('VATABLE SALES',18,""),"right",23," ")
+                         .append_chars(numInt(($taxable)),"left",13," ")."\r\n";
+            $print_str .= append_chars(substrwords('VAT EXEMPT SALES',18,""),"right",23," ")
+                         .append_chars(numInt(($nontaxable)),"left",13," ")."\r\n";
+            $print_str .= append_chars(substrwords('ZERO RATED',13,""),"right",23," ")
+                         .append_chars(numInt(($zero_rated)),"left",13," ")."\r\n";
+            $print_str .= append_chars("","right",23," ").append_chars("-----------","left",13," ")."\r\n";     
+            $print_str .= append_chars(substrwords('NET SALES',18,""),"right",23," ")
+                                     .append_chars(numInt(($nsss)),"left",13," ")."\r\n";                             
+            $print_str .= "\r\n";
             $print_str .= append_chars(substrwords('Invoice Start: ',18,""),"right",18," ").align_center('',5," ")
                          .append_chars(iSetObj($trans['first_ref'],'trans_ref'),"left",13," ")."\r\n";
             $print_str .= append_chars(substrwords('Invoice End: ',18,""),"right",18," ").align_center('',5," ")
                          .append_chars(iSetObj($trans['last_ref'],'trans_ref'),"left",13," ")."\r\n";    
             $print_str .= append_chars(substrwords('Invoice Ctr: ',18,""),"right",18," ").align_center('',5," ")
                          .append_chars($trans['ref_count'],"left",13," ")."\r\n";  
-            
             if($title_name == "ZREAD"){
                 // $gt = $this->old_grand_total($post['from']);
                 $gt = $this->old_grand_net_total($post['from']);
                 $print_str .= "\r\n";
                 $print_str .= append_chars(substrwords('OLD GT: ',18,""),"right",18," ").align_center('',5," ")
-                             .append_chars(numInt( $gt['old_grand_total'] - ($charges + $local_tax) ),"left",13," ")."\r\n";    
+                             // .append_chars(numInt( $gt['old_grand_total'] - ($charges + $local_tax) ),"left",13," ")."\r\n";    
+                             .append_chars(numInt( $gt['old_grand_total']),"left",13," ")."\r\n";    
                 $print_str .= append_chars(substrwords('NEW GT: ',18,""),"right",18," ").align_center('',5," ")
                              .append_chars( numInt($gt['old_grand_total']+$net_no_adds)  ,"left",13," ")."\r\n";                  
                              // .append_chars( numInt($gt['old_grand_total']+$net)  ,"left",13," ")."\r\n";                  
@@ -1647,9 +1627,32 @@ class Prints extends CI_Controller {
             if(count($result) > 0){
                 $old_grand_total += $result[0]->total;
             }
+
+            $hargs['trans_sales.datetime <= '] = $date;
+            $hargs['trans_sales.type_id'] = SALES_TRANS;
+            $hargs['trans_sales.inactive'] = 0;
+            $hargs["trans_sales.trans_ref  IS NOT NULL"] = array('use'=>'where','val'=>null,'third'=>false);
+            $hargs['trans_sales.pos_id'] = TERMINAL_ID;
+            $joinh['trans_sales'] = array('content'=>'trans_sales_charges.sales_id = trans_sales.sales_id','mode'=>'left');
+            $result = $this->site_model->get_tbl('trans_sales_charges',$hargs,array(),$joinh,true,'sum(trans_sales_charges.amount) as total_charges');
+            // echo $this->site_model->db->last_query();
+            if(count($result) > 0){
+                $old_grand_total -= $result[0]->total_charges;
+            }
+            $largs['trans_sales.datetime <= '] = $date;
+            $largs['trans_sales.type_id'] = SALES_TRANS;
+            $largs['trans_sales.inactive'] = 0;
+            $largs["trans_sales.trans_ref  IS NOT NULL"] = array('use'=>'where','val'=>null,'third'=>false);
+            $largs['trans_sales.pos_id'] = TERMINAL_ID;
+            $joinl['trans_sales'] = array('content'=>'trans_sales_local_tax.sales_id = trans_sales.sales_id','mode'=>'left');
+            $result = $this->site_model->get_tbl('trans_sales_local_tax',$largs,array(),$joinl,true,'sum(trans_sales_local_tax.amount) as total_lt');
+            if(count($result) > 0){
+                $old_grand_total -= $result[0]->total_lt;
+            }
+
             $cargs = array('read_type'=>Z_READ,'DATE(read_details.read_date) <= '=>date2Sql($date));
-            if($this->site_model->db->database == "dinemain")
-                $cargs['read_details.pos_id'] = TERMINAL_ID;
+            // if($this->site_model->db->database == "dinemain")
+            //     $cargs['read_details.pos_id'] = TERMINAL_ID;
             
             $ctrresult = $this->site_model->get_tbl('read_details',$cargs,array(),null,true,'id','read_date',null);
             foreach ($ctrresult as $res) {

@@ -45,9 +45,10 @@ define('ORDERING_STATION',		false);
 define('ROBINSON',				false);
 define('MALL_ENABLED',			true);
 // define('MALL',					'robinsons');
-// define('MALL',					'ortigas');
-define('MALL',					'araneta');
+define('MALL',					'ortigas');
+// define('MALL',					'araneta');
 
+define('AUTO_ADD_SERVICE_CHARGE',	true);
 
 define('BEVERAGE_ID'			,	'2');
 
