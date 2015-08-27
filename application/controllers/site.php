@@ -205,6 +205,9 @@ class Site extends Reads {
 				                        $this->araneta_month_file($now_date);
 				                    }
 				                }
+				                else if (MALL == 'megamall') {
+				                    $this->sm_file($read_date,$zread_id);
+				                }
 				            }
 
 						}	

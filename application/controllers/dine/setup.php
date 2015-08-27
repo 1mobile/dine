@@ -84,6 +84,7 @@ class Setup extends CI_Controller {
             "tin"=>$this->input->post('tin'),
             "machine_no"=>$this->input->post('machine_no'),
             "bir"=>$this->input->post('bir'),
+            "serial"=>$this->input->post('serial'),
             "permit_no"=>$this->input->post('permit_no'),
             // "serial"=>$this->input->post('serial'),
             "accrdn"=>$this->input->post('accrdn'),

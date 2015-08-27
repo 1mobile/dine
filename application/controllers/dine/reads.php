@@ -640,7 +640,330 @@ class Reads extends Prints {
 
             return array('error'=>$error,'file'=>$filename);
         }
-        public function sm_file(){
+        public function sm_file($read_date=null,$zread_id=null){
+            // $read_date = '2015-08-27 14:07:02';
+            $print_str = "";
+            $args = array();
+            $file_flg = null;
+            if($zread_id != null){
+                $lastRead = $this->cashier_model->get_z_read($zread_id);
+                $zread = array();
+                if(count($lastRead) > 0){
+                    foreach ($lastRead as $res) {
+                        $zread = array(
+                            'from' => $res->scope_from,
+                            'to'   => $res->scope_to,
+                            'old_gt_amnt' => $res->old_total,
+                            'grand_total' => $res->grand_total,
+                            'read_date' => $res->read_date,
+                            'id' => $res->id,
+                            'user_id'=>$res->user_id
+                        );
+                        $read_date = $res->read_date;
+                    }           
+                }
+                $args['trans_sales.datetime >= '] = $zread['from'];             
+                $args['trans_sales.datetime <= '] = $zread['to'];
+                $file_flg = "Z".date('mdY',strtotime($read_date)).".flg";
+            }
+            $file_txt = date('mdY',strtotime($read_date)).".txt";
+            $file_csv = date('mdY',strtotime($read_date)).".csv";
+            $year = date('Y',strtotime($read_date));
+            $month = date('M',strtotime($read_date));
+            if (!file_exists("C:/SM/".$year."/".$month."/")) {   
+                mkdir("C:/SM/".$year."/".$month."/", 0777, true);
+            }
+            $text = "C:/SM/".$year."/".$month."/".$file_txt;
+            $csv = "C:/SM/".$year."/".$month."/".$file_csv;
+            $flg = null;
+            if($file_flg != null)
+                $flg = "C:/SM/".$year."/".$month."/".$file_flg;
+            #### GET POS MACHINE DETAILS
+                $mesults = $this->site_model->get_tbl('branch_details');
+                $mes = $mesults[0];
+                $serial_no = $mes->serial;
+                $machine_no = $mes->machine_no;
+            #### GET TRANS
+                if($zread_id == null){
+                    $last_zread = $this->cashier_model->get_last_z_read(Z_READ,$read_date);
+                    $date_from = null;
+                    if(count($last_zread) > 0 ){
+                        $args['trans_sales.datetime >= '] = $last_zread[0]->scope_to;             
+                    }
+                    $args['trans_sales.datetime <= '] = $read_date;
+                }
+
+                $curr = true; 
+                $trans = $this->trans_sales($args,$curr);
+                $sales = $trans['sales'];
+                $net = $trans['net'];
+
+                $gt = $this->old_grand_net_total($read_date);
+                $old_gt = $gt['true_grand_total'];
+                $new_gt = $gt['true_grand_total'] + $net;
+            #### DISCOUNTS
+                $trans_discounts = $this->discounts_sales($sales['settled']['ids'],$curr);
+                $discounts = $trans_discounts['total']; 
+                $tax_disc = $trans_discounts['tax_disc_total']; 
+                $no_tax_disc = $trans_discounts['no_tax_disc_total']; 
+                $sc_disc = 0;
+                $pwd_disc = 0;
+                $other_disc = 0;
+                foreach ($trans_discounts['types'] as $code => $disc) {
+                    if($code == 'SNDISC'){
+                        $sc_disc += $disc['amount'];
+                    }
+                    else if($code == 'PWDISC'){
+                        $pwd_disc += $disc['amount'];
+                    }
+                    else{
+                        $other_disc += $disc['amount'];
+                    }
+                }
+            #### VOIDS
+                $total_void = 0;
+                if(isset($trans['sales']['void']['orders']) && count($trans['sales']['void']['orders']) > 0){
+                    $void = $trans['sales']['void']['orders'];
+                    if(count($void) > 0){
+                        foreach ($void as $v) {
+                            $total_void += $v->total_amount;
+                        }                
+                    } 
+                }
+            #### TAX
+                $trans_tax = $this->tax_sales($sales['settled']['ids'],$curr);
+                $tax = $trans_tax['total'];
+            #### LOCAL TAX
+                $trans_local_tax = $this->local_tax_sales($sales['settled']['ids'],$curr);
+                $local_tax = $trans_local_tax['total']; 
+            #### CHARGES
+                $trans_charges = $this->charges_sales($sales['settled']['ids'],$curr);
+                $charges_types = $trans_charges['types'];
+                $charges = $trans_charges['total']; 
+                $sc = 0;
+                $oc = $local_tax;
+                foreach ($charges_types as $id => $row) {
+                    if($id == SERVICE_CHARGE_ID){
+                        $sc += $row['amount'];
+                    }
+                    else{
+                        $oc += $row['amount'];
+                    }
+                }
+            #### NO TAX
+                $trans_no_tax = $this->no_tax_sales($sales['settled']['ids'],$curr);
+                $trans_zero_rated = $this->zero_rated_sales($sales['settled']['ids'],$curr);
+                $no_tax = $trans_no_tax['total'];
+                $zero_rated = $trans_zero_rated['total'];
+                $no_tax -= $zero_rated;
+                $vat_exempt_sales = $no_tax - $no_tax_disc;
+            #### PAYMENTS
+                
+                $cash_pay_sales = 0;
+                $cash_pay_ctr = 0;
+                $gc_pay_sales = 0;
+                $gc_pay_ctr = 0;
+                $other_pay_sales = 0;
+                $other_pay_ctr = 0;
+                $cards = array(
+                    'debit' => 0,
+                    'Master Card' => 0,
+                    'VISA' => 0,
+                    'AmEx' => 0,
+                    'jcb' => 0,
+                    'diners' => 0,
+                    'other' => 0
+                );
+                $card_ctr = array(
+                    'debit' => 0,
+                    'Master Card' => 0,
+                    'VISA' => 0,
+                    'AmEx' => 0,
+                    'jcb' => 0,
+                    'diners' => 0,
+                    'other' => 0
+                );
+                  
+                if(count($sales['settled']['ids']) > 0){
+                    $pargs["trans_sales_payments.sales_id"] = $sales['settled']['ids'];
+                    if($zread_id != null)
+                        $this->site_model->db = $this->load->database('main', TRUE);
+                    else
+                        $this->site_model->db = $this->load->database('default', TRUE);
+                    $pesults = $this->site_model->get_tbl('trans_sales_payments',$pargs); 
+                    foreach ($pesults as $pes) {
+                        if($pes->payment_type == 'cash'){
+                            $cash_pay_sales += $pes->to_pay;
+                            $cash_pay_ctr += 1;
+                        }
+                        elseif($pes->payment_type == 'credit'){
+                            if(isset($cards[$pes->card_type])){
+                                $cards[$pes->card_type] += $pes->to_pay;
+                                $card_ctr[$pes->card_type] += 1;
+                            }
+                            else{
+                                $cards['other'] += $pes->to_pay;
+                                $card_ctr['other'] += 1;
+                            }
+                        }
+                        elseif($pes->payment_type == 'gc'){
+                            $gc_pay_sales += $pes->to_pay;
+                            $gc_pay_ctr += 1;
+                        }
+                        else{
+                            $other_pay_sales += $pes->to_pay;
+                            $other_pay_ctr += 1;
+                        }
+                    }
+                }
+            #### PRINT
+                $br_code = '01';
+                $tenant_code = '123456789';
+                $class_code = '01';
+                $trade_code = 'SAP';
+                $outlet_no = '01';
+                // HEADER 1 - 5
+                $print_str = commar($print_str,array($br_code,$tenant_code,$class_code,$trade_code,$outlet_no));
+                // OLD GT AND NEW GT 6 - 7
+                $print_str = commar($print_str,array(numInt($old_gt),numInt($new_gt) ));
+                // SALES TYPE 8
+                $print_str = commar($print_str,'SM01');
+                // DEPARTMENT SUM 9
+                $print_str = commar($print_str,numInt(0));
+                // REGULAR DISCOUNT 10
+                $print_str = commar($print_str,numInt($other_disc));
+                // EMPLOYEE DISCOUNT 11
+                $print_str = commar($print_str,numInt(0));
+                // SENIOR CITIZEN DISCOUNT 12
+                $print_str = commar($print_str,numInt($sc_disc));
+                // VIP DISCOUNT 13
+                $print_str = commar($print_str,numInt(0));
+                // PWD DISCOUNT 14
+                $print_str = commar($print_str,numInt($pwd_disc));
+                // GPC DISCOUNT 15
+                $print_str = commar($print_str,numInt(0));
+                // RESERVE DISCOUNT 16 - 21
+                for ($i=0; $i <= 6; $i++) { 
+                    $print_str = commar($print_str,numInt(0));
+                }
+                // VAT 22
+                $print_str = commar($print_str,numInt($tax));
+                // OTHER VAT 23
+                $print_str = commar($print_str,numInt($local_tax));
+                // ADJUSTMENTS 24 - 28
+                $print_str = commar($print_str,array(numInt(0),numInt(0),numInt(0),numInt(0),numInt(0))); 
+                // DAILY SALES 29
+                $print_str = commar($print_str,numInt($net));
+                // VOID 30
+                $print_str = commar($print_str,numInt($total_void));
+                // REFUND 31
+                $print_str = commar($print_str,numInt(0));
+                // SALES INCLUSIVE OF VAT 32
+                $siov = $net - ($charges + $local_tax) + $discounts - $vat_exempt_sales;
+                $print_str = commar($print_str,numInt($siov));
+                // NON VAT SALES 33
+                $print_str = commar($print_str,numInt($vat_exempt_sales));
+                // PAYMENTS 34 - 44 
+                    ##CHARGE SALES
+                     $charges_sales = $gc_pay_sales + $cards['debit'] + $other_pay_sales + $cards['Master Card'] + $cards['VISA']
+                                      + $cards['AmEx'] + $cards['diners'] + $cards['jcb'] + $cards['other'];
+                     $print_str = commar($print_str,numInt($charges_sales));        
+                    ##CASH SALES
+                         $print_str = commar($print_str,numInt($cash_pay_sales));        
+                    ##GC SALES
+                         $print_str = commar($print_str,numInt($gc_pay_sales));        
+                    ##DEBIT SALES
+                         $print_str = commar($print_str,numInt($cards['debit']));        
+                    ##OTHER SALES
+                         $print_str = commar($print_str,numInt($other_pay_sales));        
+                    ##MASTER CARD SALES
+                         $print_str = commar($print_str,numInt($cards['Master Card']));        
+                    ##VISA SALES
+                         $print_str = commar($print_str,numInt($cards['VISA']));
+                    ##AMERICAN EXPRESS SALES
+                         $print_str = commar($print_str,numInt($cards['AmEx']));
+                    ##DINERS SALES
+                         $print_str = commar($print_str,numInt($cards['diners']));
+                    ##JCB SALES
+                         $print_str = commar($print_str,numInt($cards['jcb']));
+                    ##OTHER CARD
+                         $print_str = commar($print_str,numInt($cards['other']));                            
+                // SERVICE CHARGE 45
+                $print_str = commar($print_str,numInt($sc));
+                // OTHER CHARGE 46
+                $print_str = commar($print_str,numInt($oc));
+                // OTHER CHARGE 47 - 49
+                    $allIDS = $sales['settled']['ids'];
+                    asort($allIDS);
+                    foreach ($allIDS as $key) {
+                        $print_str = commar($print_str,$key);
+                        break;
+                    }
+                    $last_key = null;
+                    foreach ($allIDS as $key) {
+                       $last_key = $key;
+                    }
+                    $print_str = commar($print_str,$last_key);
+                    $print_str = commar($print_str,count($allIDS));
+                // BEGINNING INVOICE 50
+                $print_str = commar($print_str,iSetObj($trans['first_ref'],'trans_ref'));
+                // ENDING INVOICE 51
+                $print_str = commar($print_str,iSetObj($trans['last_ref'],'trans_ref'));
+                // PAYMENT COUNTER TRANS 52 - 61
+                    ##CASH TRANSACTIONS
+                         $print_str = commar($print_str,$cash_pay_ctr);
+                    ##GC TRANSACTIONS
+                         $print_str = commar($print_str,$gc_pay_ctr);
+                    ##debit TRANSACTIONS
+                         $print_str = commar($print_str,$card_ctr['debit']);
+                    ##OTHER TENDER TRANSACTIONS
+                         $print_str = commar($print_str,$other_pay_ctr);
+                    ##MASTER CARD TRANSACTIONS
+                         $print_str = commar($print_str,$card_ctr['Master Card']);
+                    ##VISA TRANSACTIONS
+                         $print_str = commar($print_str,$card_ctr['VISA']);
+                    ##AMERICAN EXPRESS TRANSACTIONS
+                         $print_str = commar($print_str,$card_ctr['AmEx']);
+                    ##DINERS TRANSACTIONS
+                         $print_str = commar($print_str,$card_ctr['diners']);
+                    ##jcb TRANSACTIONS
+                         $print_str = commar($print_str,$card_ctr['jcb']);
+                    ##OTHER TRANSACTIONS
+                         $print_str = commar($print_str,$card_ctr['other']);
+                // MACHINE NO 62
+                $print_str = commar($print_str,$machine_no);
+                // SERIAL NO 63
+                $print_str = commar($print_str,$serial_no);
+                // SERIAL NO 64
+                $zread_ctr = 0;
+                if($zread_id != null)
+                    $zread_ctr = $gt['ctr'];
+                $print_str = commar($print_str,$zread_ctr);
+                // SERIAL NO 65
+                $dt = $read_date;
+                if($zread_id != null){
+                    $dt = $zread['to'];
+                }
+                $print_str = commar($print_str,date('His',strtotime($dt)) );
+                // SERIAL NO 66
+                $print_str = commar($print_str,date('mdY',strtotime($dt)) );
+
+                $print_str = substr($print_str,0,-1);
+            $fp = fopen($text, "w+");
+            fwrite($fp,$print_str);
+            fclose($fp);
+
+            $fp = fopen($csv, "w+");
+            fwrite($fp,$print_str);
+            fclose($fp);
+            if($flg != null){
+                $fp = fopen($flg, "w+");
+                fwrite($fp,$print_str);
+                fclose($fp);
+            }
+            // echo "<pre>$print_str</pre>";
+        }    
+        public function sm_file2(){
             $today = $this->site_model->get_db_now('sql');
             $print_str = "";
             ##CREATE FILE NAME
@@ -992,6 +1315,9 @@ class Reads extends Prints {
 
             $print_str = substr($print_str,0,-1);
             // echo "<br><br>".$print_str;
+            if(!file_exists("sm")) {
+               mkdir("sm", 0777, true);
+            }
             $filename = 'sm/'.$filename;
             $fp = fopen($filename, "w+");
             fwrite($fp,$print_str);

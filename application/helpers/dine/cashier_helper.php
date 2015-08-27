@@ -1,4 +1,11 @@
 <?php
+function indexPage2(){
+	$CI =& get_instance();
+	$CI->make->sDiv(array('id'=>'control_panel'));
+		
+	$CI->make->eDiv();
+	return $CI->make->code();
+}	
 function indexPage($needEod=false,$set){
 	$CI =& get_instance();
 	$user = $CI->session->userdata('user');

@@ -58,7 +58,8 @@ function makeDetailsForm($det=array(),$set=array(),$splashes=array()){
 												// $CI->make->sDiv(array('class'=>'bootstrap-timepicker'));
 												// 	$CI->make->input('Opening Time','store_open',iSetObj($det,'store_open'),'',array('class'=>'rOkay timepicker'),null,fa('fa-clock-o'));
 												// $CI->make->eDiv();
-											$CI->make->input('BIR #','bir',iSetObj($det,'bir'),'BIR',array());
+											// $CI->make->input('BIR #','bir',iSetObj($det,'bir'),'BIR',array());
+											$CI->make->input('Serial #','serial',iSetObj($det,'serial'),'Serial Number',array());
 											$CI->make->eDivCol();
 										$CI->make->eDivRow();
 										$CI->make->input('Website','website',iSetObj($det,'website'),'Website',array());

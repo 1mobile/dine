@@ -45,8 +45,9 @@ define('ORDERING_STATION',		false);
 define('ROBINSON',				false);
 define('MALL_ENABLED',			true);
 // define('MALL',					'robinsons');
-define('MALL',					'ortigas');
+// define('MALL',					'ortigas');
 // define('MALL',					'araneta');
+define('MALL',					'megamall');
 
 define('AUTO_ADD_SERVICE_CHARGE',	true);
 

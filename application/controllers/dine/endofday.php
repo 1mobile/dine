@@ -415,6 +415,9 @@ class Endofday extends Cashier {
                         $this->araneta_month_file($now_date);
                     }
                 }
+                else if (MALL == 'megamall') {
+                    $this->sm_file($read_date,$z_read_id);
+                }
 
             }
             update_load(100);

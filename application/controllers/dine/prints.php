@@ -1493,6 +1493,7 @@ class Prints extends CI_Controller {
             $total = 0;
             $pays = array();
             $ids_used = array();
+            $all_payments = array();
             if(count($ids) > 0){
                 $n_payments=array();
                 if($curr){
@@ -1502,7 +1503,6 @@ class Prints extends CI_Controller {
                 }    
                 $this->db = $this->load->database('main', TRUE);
                 $payments = $this->cashier_model->get_all_trans_sales_payments(null,array("trans_sales_payments.sales_id"=>$ids));
-
                 foreach ($payments as $py) {
                     if(!in_array($py->sales_id, $ids_used)){
                         $ids_used[] = $py->sales_id;
@@ -1519,6 +1519,7 @@ class Prints extends CI_Controller {
                         $pays[$py->payment_type]['amount'] += $amount;
                     }
                     $total += $amount;
+                    $all_payments[] = $py;
                 }
                 if(count($n_payments) > 0){
                     foreach ($n_payments as $py) {
@@ -1535,12 +1536,14 @@ class Prints extends CI_Controller {
                                 $pays[$py->payment_type]['amount'] += $amount;
                             }
                             $total += $amount;
+                            $all_payments[] = $py;
                         }
                     }
                 }
             }
             $ret['total'] = $total;
             $ret['types'] = $pays;
+            $ret['all_pays'] = $all_payments;
 
             return $ret;
         }  
@@ -1616,7 +1619,6 @@ class Prints extends CI_Controller {
             return array('old_grand_total'=>$old_grand_total,'ctr'=>$ctr);
         }
         public function old_grand_net_total($date=""){
-            $this->db = $this->load->database('main', TRUE);
             $old_grand_total = 0;
             $ctr = 0;
             $args['trans_sales.datetime < '] = $date;
@@ -1624,17 +1626,21 @@ class Prints extends CI_Controller {
             $args['trans_sales.inactive'] = 0;
             $args["trans_sales.trans_ref  IS NOT NULL"] = array('use'=>'where','val'=>null,'third'=>false);
             $args['trans_sales.terminal_id'] = TERMINAL_ID;
+            
+            $this->db = $this->load->database('main', TRUE);
             $result = $this->site_model->get_tbl('trans_sales',$args,array(),null,true,'sum(trans_sales.total_amount) as total');
             if(count($result) > 0){
                 $old_grand_total += $result[0]->total;
             }
-
+            $true_grand_total = $old_grand_total;
             $hargs['trans_sales.datetime <= '] = $date;
             $hargs['trans_sales.type_id'] = SALES_TRANS;
             $hargs['trans_sales.inactive'] = 0;
             $hargs["trans_sales.trans_ref  IS NOT NULL"] = array('use'=>'where','val'=>null,'third'=>false);
             $hargs['trans_sales.pos_id'] = TERMINAL_ID;
             $joinh['trans_sales'] = array('content'=>'trans_sales_charges.sales_id = trans_sales.sales_id','mode'=>'left');
+            
+            $this->site_model->db = $this->load->database('main', TRUE);
             $result = $this->site_model->get_tbl('trans_sales_charges',$hargs,array(),$joinh,true,'sum(trans_sales_charges.amount) as total_charges');
             // echo $this->site_model->db->last_query();
             if(count($result) > 0){
@@ -1646,6 +1652,7 @@ class Prints extends CI_Controller {
             $largs["trans_sales.trans_ref  IS NOT NULL"] = array('use'=>'where','val'=>null,'third'=>false);
             $largs['trans_sales.pos_id'] = TERMINAL_ID;
             $joinl['trans_sales'] = array('content'=>'trans_sales_local_tax.sales_id = trans_sales.sales_id','mode'=>'left');
+            $this->db = $this->load->database('main', TRUE);
             $result = $this->site_model->get_tbl('trans_sales_local_tax',$largs,array(),$joinl,true,'sum(trans_sales_local_tax.amount) as total_lt');
             if(count($result) > 0){
                 $old_grand_total -= $result[0]->total_lt;
@@ -1659,7 +1666,7 @@ class Prints extends CI_Controller {
             foreach ($ctrresult as $res) {
                 $ctr++;
             }
-            return array('old_grand_total'=>$old_grand_total,'ctr'=>$ctr);
+            return array('old_grand_total'=>$old_grand_total,'true_grand_total'=>$true_grand_total,'ctr'=>$ctr);
         }
         public function shift_cashout($shift_id=""){
             $cashout_id = "";

@@ -3579,7 +3579,11 @@ class Cashier extends Reads {
                     }
                     $print_echo = $this->print_sales_receipt($sales_id,false,false,true,null,true,$no_prints,$order_slip_prints,$approved_by,false,true);
                     
-                    // $this->sm_file();
+                    if(MALL_ENABLED){
+                        if(MALL == 'megamall'){
+                            $this->sm_file($order['datetime']);
+                        }
+                    }
 
             //     // }
             }
