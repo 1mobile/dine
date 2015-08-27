@@ -43,6 +43,7 @@ $jsFiles[] = "js/plugins/perfect-scrollbar/perfect-scrollbar.js";
 $jsFiles[] = "js/plugins/timepicker/bootstrap-timepicker.js";
 $jsFiles[] = "js/plugins/datetimepicker/js/moment.js";
 $jsFiles[] = "js/plugins/datetimepicker/js/bootstrap-datetimepicker.min.js";
+$jsFiles[] = "js/jquery.fullscreen.min.js";
 
 
 

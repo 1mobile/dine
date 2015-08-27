@@ -474,6 +474,7 @@ class Prints extends CI_Controller {
             $discounts = $trans_discounts['total']; 
             $local_tax = $trans_local_tax['total']; 
             $less_vat = (($gross+$charges+$local_tax) - $discounts) - $net;
+            // $less_vat  = $no_tax_disc * 0.60;
             if($less_vat < 0)
                 $less_vat = 0;
 

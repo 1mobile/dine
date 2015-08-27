@@ -8,6 +8,44 @@ class Cashier extends Reads {
         $this->load->helper('core/string_helper');
         $this->load->model('site/site_model');
     }
+    public function index(){
+        $this->load->helper('dine/cashier_helper');
+        $this->load->helper('core/on_screen_key_helper');
+        $data = $this->syter->spawn(null);
+        sess_clear('trans_mod_cart');
+        sess_clear('trans_cart');
+        sess_clear('counter');
+        sess_clear('trans_disc_cart');
+        sess_clear('trans_charge_cart');
+        // $time = $this->site_model->get_db_now();
+        // $prev_date = date('Y-m-d', strtotime($time .' -1 day'));
+        // $result = $this->cashier_model->get_latest_read_date(Z_READ);
+        // $need_eod = false;
+        // if(!empty($result)){
+        //     if(strtotime($prev_date) > strtotime($result->maxi)){
+        //         $need_eod = true;
+        //     }
+        // }
+
+        $set = $this->cashier_model->get_pos_settings();
+
+        $data['code'] = indexPage(false,$set);
+        $data['add_css'] = array('css/cashier.css','css/onscrkeys.css');
+        $data['add_js'] = array('js/on_screen_keys.js');
+        $data['load_js'] = 'dine/cashier.php';
+        $data['use_js'] = 'controlPanelJs';
+        $this->load->view('cashier',$data);
+    }
+    public function index2(){
+        $this->load->helper('dine/cashier_helper');
+        $this->load->helper('core/on_screen_key_helper');
+        $data = $this->syter->spawn(null);
+
+        $data['add_css'] = array('css/cashier.css','css/onscrkeys.css','css/control_panel.css');
+        $data['code'] = indexPage2();
+        $data['noNavbar'] = true;
+        $this->load->view('cashier',$data);
+    }
     function manager_call(){
         $this->load->helper('dine/manager_helper');
         $this->load->helper('core/on_screen_key_helper');
@@ -99,34 +137,6 @@ class Cashier extends Reads {
         if(!empty($res)){
             $this->cashier_model->add_reasons($res);
         }
-    }
-    public function index(){
-        $this->load->helper('dine/cashier_helper');
-        $this->load->helper('core/on_screen_key_helper');
-        $data = $this->syter->spawn(null);
-        sess_clear('trans_mod_cart');
-        sess_clear('trans_cart');
-        sess_clear('counter');
-        sess_clear('trans_disc_cart');
-        sess_clear('trans_charge_cart');
-        // $time = $this->site_model->get_db_now();
-        // $prev_date = date('Y-m-d', strtotime($time .' -1 day'));
-        // $result = $this->cashier_model->get_latest_read_date(Z_READ);
-        // $need_eod = false;
-        // if(!empty($result)){
-        //     if(strtotime($prev_date) > strtotime($result->maxi)){
-        //         $need_eod = true;
-        //     }
-        // }
-
-        $set = $this->cashier_model->get_pos_settings();
-
-        $data['code'] = indexPage(false,$set);
-        $data['add_css'] = array('css/cashier.css','css/onscrkeys.css');
-        $data['add_js'] = array('js/on_screen_keys.js');
-        $data['load_js'] = 'dine/cashier.php';
-        $data['use_js'] = 'controlPanelJs';
-        $this->load->view('cashier',$data);
     }
     public function _remap($method,$params=array()){
         $this->load->model('dine/clock_model');
@@ -665,440 +675,440 @@ class Cashier extends Reads {
             return $det;
     }
     #TABLES
-    public function tables(){
-        $this->load->model('site/site_model');
-        $this->load->model('dine/cashier_model');
-        $this->load->helper('dine/cashier_helper');
-        $this->load->helper('core/on_screen_key_helper');
-        $data = $this->syter->spawn(null);
-        sess_clear('trans_type_cart');
-        $data['code'] = tablesPage();
+        public function tables(){
+            $this->load->model('site/site_model');
+            $this->load->model('dine/cashier_model');
+            $this->load->helper('dine/cashier_helper');
+            $this->load->helper('core/on_screen_key_helper');
+            $data = $this->syter->spawn(null);
+            sess_clear('trans_type_cart');
+            $data['code'] = tablesPage();
 
-        $data['add_css'] = array('css/cashier.css','css/onscrkeys.css','css/rtag.css');
-        $data['add_js'] = array('js/on_screen_keys.js');
-        $data['load_js'] = 'dine/cashier.php';
-        $data['use_js'] = 'tablesJs';
-        $data['noNavbar'] = true;
-        $this->load->view('cashier',$data);
-    }
-    function transfer_tables(){
-        $this->load->helper('dine/cashier_helper');
-        $this->load->helper('core/on_screen_key_helper');
-        $data = $this->syter->spawn(null,false);
-        $tables = $this->get_tables(false);
-        $data['code'] = tableTransfer($tables);
-        $data['add_css'] = array('css/pos.css','css/onscrkeys.css', 'css/cashier.css');
-        $data['add_js'] = array('js/on_screen_keys.js');
-        $data['load_js'] = 'dine/cashier';
-        $data['use_js'] = 'tableTransferJs';
-        $this->load->view('load',$data);
-    }
-    function go_transfer_table($sales_id=null,$table_id=null){
-        $this->load->model('dine/cashier_model');
-        $error = "";
-        $items = array('table_id'=>$table_id);
-        $this->cashier_model->update_trans_sales($items,$sales_id);
-        site_alert('Order #'.$sales_id." successfully transfered",'success');
-    }
-    public function get_tables($asJson=true,$tbl_id=null){
-        $this->load->model('dine/cashier_model');
-        $tbl = array();
-        $occ = array();
-        $occ_tbls = $this->cashier_model->get_occupied_tables();
-        foreach ($occ_tbls as $det) {
-          $occ[] = $det->table_id;
+            $data['add_css'] = array('css/cashier.css','css/onscrkeys.css','css/rtag.css');
+            $data['add_js'] = array('js/on_screen_keys.js');
+            $data['load_js'] = 'dine/cashier.php';
+            $data['use_js'] = 'tablesJs';
+            $data['noNavbar'] = true;
+            $this->load->view('cashier',$data);
         }
-        $tables = $this->cashier_model->get_tables();
-        foreach ($tables as $res) {
-            $status = 'green';
-            if(in_array($res->tbl_id, $occ)){
-              $status = 'red';
+        function transfer_tables(){
+            $this->load->helper('dine/cashier_helper');
+            $this->load->helper('core/on_screen_key_helper');
+            $data = $this->syter->spawn(null,false);
+            $tables = $this->get_tables(false);
+            $data['code'] = tableTransfer($tables);
+            $data['add_css'] = array('css/pos.css','css/onscrkeys.css', 'css/cashier.css');
+            $data['add_js'] = array('js/on_screen_keys.js');
+            $data['load_js'] = 'dine/cashier';
+            $data['use_js'] = 'tableTransferJs';
+            $this->load->view('load',$data);
+        }
+        function go_transfer_table($sales_id=null,$table_id=null){
+            $this->load->model('dine/cashier_model');
+            $error = "";
+            $items = array('table_id'=>$table_id);
+            $this->cashier_model->update_trans_sales($items,$sales_id);
+            site_alert('Order #'.$sales_id." successfully transfered",'success');
+        }
+        public function get_tables($asJson=true,$tbl_id=null){
+            $this->load->model('dine/cashier_model');
+            $tbl = array();
+            $occ = array();
+            $occ_tbls = $this->cashier_model->get_occupied_tables();
+            foreach ($occ_tbls as $det) {
+              $occ[] = $det->table_id;
             }
-            $tbl[$res->tbl_id] = array(
-                "name"=> $res->name,
-                "top"=> $res->top,
-                "left"=> $res->left,
-                "stat"=> $status
-            );
-        }
-        if($asJson)
-            echo json_encode($tbl);
-        else
-            return $tbl;
-    }
-    public function check_occupied_tables($asJson=true){
-        $this->load->model('dine/cashier_model');
-        $tbls = $this->get_tables(false);
-        $occ = array();
-        $ucc = array();
-        foreach ($tbls as $tbl_id => $val) {
-            if($val['stat']=='red'){
-                $occ[] = array('id'=>$tbl_id,'name'=>$val['name']);
-            }
-            else{
-                $ucc[] = array('id'=>$tbl_id,'name'=>$val['name']);
-            }
-        }
-        
-        // $tbl = array();
-        // $occ = array();
-        // $occ_tbls = $this->cashier_model->get_occupied_tables();
-        // foreach ($occ_tbls as $det) {
-        //   $occ[] = array('id'=>$det->table_id,'name'=>$det->name);
-        // }
-
-        if($asJson)
-            echo json_encode(array('occ'=>$occ,'ucc'=>$ucc));
-        else
-            return array('occ'=>$occ,'ucc'=>$ucc);
-    }
-    function get_table_orders($asJson=true,$tbl_id=null){
-        $this->load->model('dine/cashier_model');
-        $this->load->model('site/site_model');
-        $args = array();
-        $args["trans_sales.trans_ref  IS NULL"] = array('use'=>'where','val'=>null,'third'=>false);
-        $args["trans_sales.inactive"] = 0;
-        $args["trans_sales.table_id"] = $tbl_id;
-        $orders = $this->cashier_model->get_trans_sales(null,$args);
-        $time = $this->site_model->get_db_now();
-        $this->make->sDivRow();
-        $ord=array();
-        foreach ($orders as $res) {
-            $status = "open";
-            if($res->trans_ref != "")
-                $status = "settled";
-            $ord[$res->sales_id] = array(
-                "type"=>$res->type,
-                "status"=>$status,
-                "user_id"=>$res->user_id,
-                "name"=>$res->username,
-                "terminal_id"=>$res->terminal_id,
-                "terminal_name"=>$res->terminal_name,
-                "shift_id"=>$res->shift_id,
-                "datetime"=>$res->datetime,
-                "amount"=>$res->total_amount
-            );
-            $this->make->sDivCol(4,'left',0);
-                    $this->make->sDiv(array('class'=>'order-btn','id'=>'order-btn-'.$res->sales_id,'ref'=>$res->sales_id));
-                        if($res->trans_ref == null){
-                            $this->make->sBox('default',array('class'=>'box-solid'));
-                        }else{
-                            $this->make->sBox('default',array('class'=>'box-solid bg-green'));
-                        }
-                            $this->make->sBoxBody();
-                                $this->make->sDivRow();
-                                    $this->make->sDivCol(6);
-                                        $this->make->sDiv(array('style'=>'margin-left:20px;'));
-                                            $this->make->H(5,strtoupper($res->type)." #".$res->sales_id,array("style"=>'font-weight:700;'));
-                                            if($res->trans_ref == null){
-                                                $this->make->H(5,strtoupper($res->username),array("style"=>'color:#888'));
-                                                $this->make->H(5,strtoupper($res->terminal_name),array("style"=>'color:#888'));
-                                            }else{
-                                                $this->make->H(5,strtoupper($res->username),array("style"=>'color:#fff'));
-                                                $this->make->H(5,strtoupper($res->terminal_name),array("style"=>'color:#fff'));
-                                            }
-                                            $this->make->H(5,tagWord(strtoupper(ago($res->datetime,$time) ) ) );
-                                        $this->make->eDiv();
-                                    $this->make->eDivCol();
-                                    $this->make->sDivCol(6);
-                                        $this->make->H(4,'Order Total',array('class'=>'text-center'));
-                                        $this->make->H(3,num($res->total_amount),array('class'=>'text-center'));
-                                    $this->make->eDivCol();
-                                $this->make->eDivRow();
-                                $this->make->sDivRow();
-                                    $this->make->sDivCol(6);
-                                        $this->make->button(fa('fa-exchange fa-lg fa-fw').' Transfer Table',array('id'=>'transfer-btn-'.$res->sales_id,'ref'=>$res->sales_id,'class'=>'transfer-btns btn-block tables-btn-orange'));
-                                    $this->make->eDivCol();
-                                    $this->make->sDivCol(6);
-                                        $this->make->button(fa('fa-print fa-lg fa-fw').' Print Billing',array('id'=>'print-btn-'.$res->sales_id,'ref'=>$res->sales_id,'class'=>'transfer-btns btn-block tables-btn-green'));
-                                    $this->make->eDivCol();
-                                $this->make->eDivRow();
-                            $this->make->eBoxBody();
-                        $this->make->eBox();
-                    $this->make->eDiv();
-            $this->make->eDivCol();
-        }
-        $this->make->eDivRow();
-        $code = $this->make->code();
-        echo json_encode(array('code'=>$code,'ids'=>$ord));
-    }
-    #CHARGES
-    function get_charges($asJson=true){
-        $this->load->model('dine/cashier_model');
-        $this->load->model('dine/settings_model');
-        $charges = $this->settings_model->get_charges();
-        $discs = array();
-        $this->make->sDivRow();
-            foreach ($charges as $res) {
-                $text = num($res->charge_amount);
-                if($res->absolute == 0){
-                    $text .= " %";
+            $tables = $this->cashier_model->get_tables();
+            foreach ($tables as $res) {
+                $status = 'green';
+                if(in_array($res->tbl_id, $occ)){
+                  $status = 'red';
                 }
-                $this->make->sDivCol(12);
-                    $this->make->button("[".strtoupper($res->charge_code)."] ".strtoupper($res->charge_name)." <br> ".$text,
-                                        array('id'=>'charges-btn-'.$res->charge_id,'class'=>'disc-btn-row btn-block counter-btn-orange double'));
-                $this->make->eDivCol();
-                $ids[$res->charge_id] = array(
-                    "charge_code"=>$res->charge_code,
-                    "charge_name"=>$res->charge_name,
-                    "charge_amount"=>$res->charge_amount,
-                    "no_tax"=>$res->no_tax,
-                    "absolute"=>$res->absolute
+                $tbl[$res->tbl_id] = array(
+                    "name"=> $res->name,
+                    "top"=> $res->top,
+                    "left"=> $res->left,
+                    "stat"=> $status
                 );
             }
-        $this->make->eDivRow();
-        $code = $this->make->code();
-        echo json_encode(array('code'=>$code,'ids'=>$ids));
-    }
-    #DISCOUNTS
-    function get_discounts($asJson=true){
-        $this->load->model('dine/cashier_model');
-        $this->load->model('dine/settings_model');
-        $trans_disc_cart = sess('trans_disc_cart');
-        $typeCN = sess('trans_type_cart');
-        $discounts = $this->settings_model->get_receipt_discounts();
-        $discs = array();
-        $this->make->sDivRow();
-            foreach ($discounts as $res) {
-                $this->make->sDivCol(12);
-                    $this->make->button("[".strtoupper($res->disc_code)."] ".strtoupper($res->disc_name),array('id'=>'item-disc-btn-'.$res->disc_code,'class'=>'disc-btn-row btn-block counter-btn-green'));
-                $this->make->eDivCol();
-                $ids[$res->disc_code] = array(
-                    "disc_code"=>$res->disc_code,
-                    "disc_id"=>$res->disc_id,
-                    "disc_name"=>$res->disc_name,
-                    "disc_rate"=>$res->disc_rate,
-                    "no_tax"=>$res->no_tax
-                );
-                $guest = null;
-                if(isset($typeCN[0]['guest']))
-                    $ids[$res->disc_code]['guest'] = $typeCN[0]['guest'];
+            if($asJson)
+                echo json_encode($tbl);
+            else
+                return $tbl;
+        }
+        public function check_occupied_tables($asJson=true){
+            $this->load->model('dine/cashier_model');
+            $tbls = $this->get_tables(false);
+            $occ = array();
+            $ucc = array();
+            foreach ($tbls as $tbl_id => $val) {
+                if($val['stat']=='red'){
+                    $occ[] = array('id'=>$tbl_id,'name'=>$val['name']);
+                }
+                else{
+                    $ucc[] = array('id'=>$tbl_id,'name'=>$val['name']);
+                }
+            }
+            
+            // $tbl = array();
+            // $occ = array();
+            // $occ_tbls = $this->cashier_model->get_occupied_tables();
+            // foreach ($occ_tbls as $det) {
+            //   $occ[] = array('id'=>$det->table_id,'name'=>$det->name);
+            // }
 
-                if(isset($trans_disc_cart[$res->disc_code])){
-                    $row = $trans_disc_cart[$res->disc_code];
-                    $ids[$res->disc_code]['guest'] = $row['guest'];
-                    $ids[$res->disc_code]['disc_type'] = $row['disc_type'];
-                    foreach ($row['persons'] as $code => $per) {
-                        $ids[$res->disc_code]['persons'][$code] = array(
-                            'name' => $per['name'],
-                            'code' => $per['code'],
-                            'bday' => $per['bday']
-                        );
+            if($asJson)
+                echo json_encode(array('occ'=>$occ,'ucc'=>$ucc));
+            else
+                return array('occ'=>$occ,'ucc'=>$ucc);
+        }
+        function get_table_orders($asJson=true,$tbl_id=null){
+            $this->load->model('dine/cashier_model');
+            $this->load->model('site/site_model');
+            $args = array();
+            $args["trans_sales.trans_ref  IS NULL"] = array('use'=>'where','val'=>null,'third'=>false);
+            $args["trans_sales.inactive"] = 0;
+            $args["trans_sales.table_id"] = $tbl_id;
+            $orders = $this->cashier_model->get_trans_sales(null,$args);
+            $time = $this->site_model->get_db_now();
+            $this->make->sDivRow();
+            $ord=array();
+            foreach ($orders as $res) {
+                $status = "open";
+                if($res->trans_ref != "")
+                    $status = "settled";
+                $ord[$res->sales_id] = array(
+                    "type"=>$res->type,
+                    "status"=>$status,
+                    "user_id"=>$res->user_id,
+                    "name"=>$res->username,
+                    "terminal_id"=>$res->terminal_id,
+                    "terminal_name"=>$res->terminal_name,
+                    "shift_id"=>$res->shift_id,
+                    "datetime"=>$res->datetime,
+                    "amount"=>$res->total_amount
+                );
+                $this->make->sDivCol(4,'left',0);
+                        $this->make->sDiv(array('class'=>'order-btn','id'=>'order-btn-'.$res->sales_id,'ref'=>$res->sales_id));
+                            if($res->trans_ref == null){
+                                $this->make->sBox('default',array('class'=>'box-solid'));
+                            }else{
+                                $this->make->sBox('default',array('class'=>'box-solid bg-green'));
+                            }
+                                $this->make->sBoxBody();
+                                    $this->make->sDivRow();
+                                        $this->make->sDivCol(6);
+                                            $this->make->sDiv(array('style'=>'margin-left:20px;'));
+                                                $this->make->H(5,strtoupper($res->type)." #".$res->sales_id,array("style"=>'font-weight:700;'));
+                                                if($res->trans_ref == null){
+                                                    $this->make->H(5,strtoupper($res->username),array("style"=>'color:#888'));
+                                                    $this->make->H(5,strtoupper($res->terminal_name),array("style"=>'color:#888'));
+                                                }else{
+                                                    $this->make->H(5,strtoupper($res->username),array("style"=>'color:#fff'));
+                                                    $this->make->H(5,strtoupper($res->terminal_name),array("style"=>'color:#fff'));
+                                                }
+                                                $this->make->H(5,tagWord(strtoupper(ago($res->datetime,$time) ) ) );
+                                            $this->make->eDiv();
+                                        $this->make->eDivCol();
+                                        $this->make->sDivCol(6);
+                                            $this->make->H(4,'Order Total',array('class'=>'text-center'));
+                                            $this->make->H(3,num($res->total_amount),array('class'=>'text-center'));
+                                        $this->make->eDivCol();
+                                    $this->make->eDivRow();
+                                    $this->make->sDivRow();
+                                        $this->make->sDivCol(6);
+                                            $this->make->button(fa('fa-exchange fa-lg fa-fw').' Transfer Table',array('id'=>'transfer-btn-'.$res->sales_id,'ref'=>$res->sales_id,'class'=>'transfer-btns btn-block tables-btn-orange'));
+                                        $this->make->eDivCol();
+                                        $this->make->sDivCol(6);
+                                            $this->make->button(fa('fa-print fa-lg fa-fw').' Print Billing',array('id'=>'print-btn-'.$res->sales_id,'ref'=>$res->sales_id,'class'=>'transfer-btns btn-block tables-btn-green'));
+                                        $this->make->eDivCol();
+                                    $this->make->eDivRow();
+                                $this->make->eBoxBody();
+                            $this->make->eBox();
+                        $this->make->eDiv();
+                $this->make->eDivCol();
+            }
+            $this->make->eDivRow();
+            $code = $this->make->code();
+            echo json_encode(array('code'=>$code,'ids'=>$ord));
+        }
+    #CHARGES
+        function get_charges($asJson=true){
+            $this->load->model('dine/cashier_model');
+            $this->load->model('dine/settings_model');
+            $charges = $this->settings_model->get_charges();
+            $discs = array();
+            $this->make->sDivRow();
+                foreach ($charges as $res) {
+                    $text = num($res->charge_amount);
+                    if($res->absolute == 0){
+                        $text .= " %";
+                    }
+                    $this->make->sDivCol(12);
+                        $this->make->button("[".strtoupper($res->charge_code)."] ".strtoupper($res->charge_name)." <br> ".$text,
+                                            array('id'=>'charges-btn-'.$res->charge_id,'class'=>'disc-btn-row btn-block counter-btn-orange double'));
+                    $this->make->eDivCol();
+                    $ids[$res->charge_id] = array(
+                        "charge_code"=>$res->charge_code,
+                        "charge_name"=>$res->charge_name,
+                        "charge_amount"=>$res->charge_amount,
+                        "no_tax"=>$res->no_tax,
+                        "absolute"=>$res->absolute
+                    );
+                }
+            $this->make->eDivRow();
+            $code = $this->make->code();
+            echo json_encode(array('code'=>$code,'ids'=>$ids));
+        }
+    #DISCOUNTS
+        function get_discounts($asJson=true){
+            $this->load->model('dine/cashier_model');
+            $this->load->model('dine/settings_model');
+            $trans_disc_cart = sess('trans_disc_cart');
+            $typeCN = sess('trans_type_cart');
+            $discounts = $this->settings_model->get_receipt_discounts();
+            $discs = array();
+            $this->make->sDivRow();
+                foreach ($discounts as $res) {
+                    $this->make->sDivCol(12);
+                        $this->make->button("[".strtoupper($res->disc_code)."] ".strtoupper($res->disc_name),array('id'=>'item-disc-btn-'.$res->disc_code,'class'=>'disc-btn-row btn-block counter-btn-green'));
+                    $this->make->eDivCol();
+                    $ids[$res->disc_code] = array(
+                        "disc_code"=>$res->disc_code,
+                        "disc_id"=>$res->disc_id,
+                        "disc_name"=>$res->disc_name,
+                        "disc_rate"=>$res->disc_rate,
+                        "no_tax"=>$res->no_tax
+                    );
+                    $guest = null;
+                    if(isset($typeCN[0]['guest']))
+                        $ids[$res->disc_code]['guest'] = $typeCN[0]['guest'];
+
+                    if(isset($trans_disc_cart[$res->disc_code])){
+                        $row = $trans_disc_cart[$res->disc_code];
+                        $ids[$res->disc_code]['guest'] = $row['guest'];
+                        $ids[$res->disc_code]['disc_type'] = $row['disc_type'];
+                        foreach ($row['persons'] as $code => $per) {
+                            $ids[$res->disc_code]['persons'][$code] = array(
+                                'name' => $per['name'],
+                                'code' => $per['code'],
+                                'bday' => $per['bday']
+                            );
+                        }
                     }
                 }
-            }
-        $this->make->eDivRow();
-        $code = $this->make->code();
+            $this->make->eDivRow();
+            $code = $this->make->code();
 
-        echo json_encode(array('code'=>$code,'ids'=>$ids));
-    }
-    public function remove_person_disc($disc=null,$code=null){
-        $trans_disc_cart = sess('trans_disc_cart');
-        $persons = array();
-        if(isset($trans_disc_cart[$disc]['persons'])){
-         $persons = $trans_disc_cart[$disc]['persons'];
+            echo json_encode(array('code'=>$code,'ids'=>$ids));
         }
-        unset($persons[$code]);
-        $trans_disc_cart[$disc]['persons'] = $persons;
-        sess_initialize('trans_disc_cart',$trans_disc_cart);
-        echo json_encode($trans_disc_cart[$disc]);
-    }
-    public function load_disc_persons($disc=null){
-        $trans_disc_cart = sess('trans_disc_cart');
+        public function remove_person_disc($disc=null,$code=null){
+            $trans_disc_cart = sess('trans_disc_cart');
             $persons = array();
-        if(isset($trans_disc_cart[$disc]['persons'])){
-            $persons = $trans_disc_cart[$disc]['persons'];
+            if(isset($trans_disc_cart[$disc]['persons'])){
+             $persons = $trans_disc_cart[$disc]['persons'];
+            }
+            unset($persons[$code]);
+            $trans_disc_cart[$disc]['persons'] = $persons;
+            sess_initialize('trans_disc_cart',$trans_disc_cart);
+            echo json_encode($trans_disc_cart[$disc]);
         }
-        $this->make->sUl(array('class'=>'ul-hover-blue'));
-        $items = array();
-        foreach ($persons as $res) {
-            $this->make->sLi(array('id'=>'disc-person-'.$res['code'],'class'=>'disc-person','style'=>'padding:5px;padding-bottom:10px;padding-top:10px;border-bottom:1px solid #ddd;'));
-                $this->make->H(4,$res['code']." ".$res['name']." ".$res['bday'],array('style'=>'margin:0;padding:0;margin-left:10px;'));            
-            $this->make->eLi();   
-            $items[$res['code']] = array(
-                "name"=> $res['code'],
-                "bday"=> $res['bday'],
-                "disc"=> $disc
-            );
+        public function load_disc_persons($disc=null){
+            $trans_disc_cart = sess('trans_disc_cart');
+                $persons = array();
+            if(isset($trans_disc_cart[$disc]['persons'])){
+                $persons = $trans_disc_cart[$disc]['persons'];
+            }
+            $this->make->sUl(array('class'=>'ul-hover-blue'));
+            $items = array();
+            foreach ($persons as $res) {
+                $this->make->sLi(array('id'=>'disc-person-'.$res['code'],'class'=>'disc-person','style'=>'padding:5px;padding-bottom:10px;padding-top:10px;border-bottom:1px solid #ddd;'));
+                    $this->make->H(4,$res['code']." ".$res['name']." ".$res['bday'],array('style'=>'margin:0;padding:0;margin-left:10px;'));            
+                $this->make->eLi();   
+                $items[$res['code']] = array(
+                    "name"=> $res['code'],
+                    "bday"=> $res['bday'],
+                    "disc"=> $disc
+                );
+            }
+            $this->make->eUl();
+            $code = $this->make->code();
+            echo json_encode(array('code'=>$code,'items'=>$items));
         }
-        $this->make->eUl();
-        $code = $this->make->code();
-        echo json_encode(array('code'=>$code,'items'=>$items));
-    }
-    public function add_person_disc(){
-       $trans_disc_cart = sess('trans_disc_cart');
-       $persons = array();
-       if(isset($trans_disc_cart[$this->input->post('disc-disc-code')]['persons'])){
-         $persons = $trans_disc_cart[$this->input->post('disc-disc-code')]['persons'];
-       }
-       $error = "";
-       $items = array();
-       $bday = null;
-       if($this->input->post('disc-cust-bday'))
-           $bday = $this->input->post('disc-cust-bday');
-       
-       if(!isset($persons[$this->input->post('disc-cust-code')])){
-           if(count($persons) >= $this->input->post('guests')){
-            $error = "Person is in limit with the no of guest.";
+        public function add_person_disc(){
+           $trans_disc_cart = sess('trans_disc_cart');
+           $persons = array();
+           if(isset($trans_disc_cart[$this->input->post('disc-disc-code')]['persons'])){
+             $persons = $trans_disc_cart[$this->input->post('disc-disc-code')]['persons'];
+           }
+           $error = "";
+           $items = array();
+           $bday = null;
+           if($this->input->post('disc-cust-bday'))
+               $bday = $this->input->post('disc-cust-bday');
+           
+           if(!isset($persons[$this->input->post('disc-cust-code')])){
+               if(count($persons) >= $this->input->post('guests')){
+                $error = "Person is in limit with the no of guest.";
+               }
+               else{
+                   $persons[$this->input->post('disc-cust-code')] = array(
+                        "name"  => $this->input->post('disc-cust-name'),
+                        "code"  => $this->input->post('disc-cust-code'),
+                        "bday"  => $bday
+                   );                    
+               }
            }
            else{
-               $persons[$this->input->post('disc-cust-code')] = array(
-                    "name"  => $this->input->post('disc-cust-name'),
-                    "code"  => $this->input->post('disc-cust-code'),
-                    "bday"  => $bday
-               );                    
+            $error = "Person is ALready added.";
            }
-       }
-       else{
-        $error = "Person is ALready added.";
-       }
-       $trans_disc_cart[$this->input->post('disc-disc-code')]['persons'] = $persons;
-       sess_initialize('trans_disc_cart',$trans_disc_cart);
+           $trans_disc_cart[$this->input->post('disc-disc-code')]['persons'] = $persons;
+           sess_initialize('trans_disc_cart',$trans_disc_cart);
 
-        $this->make->sUl(array('class'=>'ul-hover-blue'));
-        $items = array();
-        foreach ($persons as $res) {
-            $this->make->sLi(array('id'=>'disc-person-'.$res['code'],'class'=>'disc-person','style'=>'padding:5px;padding-bottom:10px;padding-top:10px;border-bottom:1px solid #ddd;'));
-                $this->make->H(4,$res['code']." ".$res['name']." ".$res['bday'],array('style'=>'margin:0;padding:0;margin-left:10px;'));            
-            $this->make->eLi();   
-            $items[$res['code']] = array(
-                "name"=> $res['code'],
-                "bday"=> $res['bday'],
-                "disc"=> $this->input->post('disc-disc-code')
-            );
+            $this->make->sUl(array('class'=>'ul-hover-blue'));
+            $items = array();
+            foreach ($persons as $res) {
+                $this->make->sLi(array('id'=>'disc-person-'.$res['code'],'class'=>'disc-person','style'=>'padding:5px;padding-bottom:10px;padding-top:10px;border-bottom:1px solid #ddd;'));
+                    $this->make->H(4,$res['code']." ".$res['name']." ".$res['bday'],array('style'=>'margin:0;padding:0;margin-left:10px;'));            
+                $this->make->eLi();   
+                $items[$res['code']] = array(
+                    "name"=> $res['code'],
+                    "bday"=> $res['bday'],
+                    "disc"=> $this->input->post('disc-disc-code')
+                );
+            }
+            $this->make->eUl();
+            $code = $this->make->code();
+            echo json_encode(array('code'=>$code,'items'=>$items,'error'=>$error));
         }
-        $this->make->eUl();
-        $code = $this->make->code();
-        echo json_encode(array('code'=>$code,'items'=>$items,'error'=>$error));
-    }
-    // public function add_trans_disc($trans_id=null){
-    //    $trans_disc_cart = sess('trans_disc_cart');
-    //    $items = array();
-    //    $addedAlready="";
-    //    if($this->input->post('type') == 'item'){
-    //         if(isset($trans_disc_cart[$this->input->post('disc-disc-id')])){
-    //             $items = $trans_disc_cart[$this->input->post('disc-disc-id')]['items'];
-    //         }
-    //         if(!in_array($this->input->post('line'), $items)){
-    //             $items[] = $this->input->post('line');
-    //         }
-    //         else{
-    //             $addedAlready="yes";
-    //         }
-    //    }
-    //    $bday = null;
-    //    if($this->input->post('disc-cust-bday'))
-    //        $bday = $this->input->post('disc-cust-bday');
+        // public function add_trans_disc($trans_id=null){
+        //    $trans_disc_cart = sess('trans_disc_cart');
+        //    $items = array();
+        //    $addedAlready="";
+        //    if($this->input->post('type') == 'item'){
+        //         if(isset($trans_disc_cart[$this->input->post('disc-disc-id')])){
+        //             $items = $trans_disc_cart[$this->input->post('disc-disc-id')]['items'];
+        //         }
+        //         if(!in_array($this->input->post('line'), $items)){
+        //             $items[] = $this->input->post('line');
+        //         }
+        //         else{
+        //             $addedAlready="yes";
+        //         }
+        //    }
+        //    $bday = null;
+        //    if($this->input->post('disc-cust-bday'))
+        //        $bday = $this->input->post('disc-cust-bday');
 
-    //    $row = array(
-    //         "name"  => $this->input->post('disc-cust-name'),
-    //         "code"  => $this->input->post('disc-cust-code'),
-    //         "bday"  => $bday,
-    //         "guest" => $this->input->post('disc-cust-guest'),
-    //         "disc_rate" => $this->input->post('disc-disc-rate'),
-    //         "disc_code" => $this->input->post('disc-disc-code'),
-    //         "disc_type" => $this->input->post('type'),
-    //         "no_tax" => $this->input->post('disc-no-tax'),
-    //         "items" => $items
-    //    );
-    //    $sess = sess_add('trans_disc_cart',$row,$this->input->post('disc-disc-id'));
-    //    $sess['addedAlready'] = $addedAlready;
+        //    $row = array(
+        //         "name"  => $this->input->post('disc-cust-name'),
+        //         "code"  => $this->input->post('disc-cust-code'),
+        //         "bday"  => $bday,
+        //         "guest" => $this->input->post('disc-cust-guest'),
+        //         "disc_rate" => $this->input->post('disc-disc-rate'),
+        //         "disc_code" => $this->input->post('disc-disc-code'),
+        //         "disc_type" => $this->input->post('type'),
+        //         "no_tax" => $this->input->post('disc-no-tax'),
+        //         "items" => $items
+        //    );
+        //    $sess = sess_add('trans_disc_cart',$row,$this->input->post('disc-disc-id'));
+        //    $sess['addedAlready'] = $addedAlready;
 
-    //    if($this->input->post('disc-no-tax') == 1){
-    //      $trans_cart = sess('trans_cart');
-    //      if($this->input->post('type') == 'item'){
-    //          foreach ($trans_cart as $line_id => $opt) {
-    //             if(in_array($line_id, $items)){
-    //                 $opt['no_tax'] = 1;
-    //                 $trans_cart[$line_id] = $opt;
-    //             }
-    //          }
-    //      }
-    //      else{
-    //          foreach ($trans_cart as $line_id => $opt) {
-    //             $opt['no_tax'] = 1;
-    //             $trans_cart[$line_id] = $opt;
-    //          }            
-    //      }
-    //      sess_initialize('trans_cart',$trans_cart);
-    //      // echo var_dump($trans_cart);
-    //    }
-    //    echo json_encode($sess);
-    // }
-    public function add_trans_disc(){
-       $trans_disc_cart = sess('trans_disc_cart');
-       $disc_cart = array();
-       $error = "";
-       if(isset($trans_disc_cart[$this->input->post('disc-disc-code')])){
-        $disc_cart = $trans_disc_cart[$this->input->post('disc-disc-code')];
-       }
-       if($this->input->post('guests') > 0){
-        if(isset($disc_cart['persons']) && count($disc_cart['persons']) <= $this->input->post('guests')){
-            $disc_cart['guest'] =  $this->input->post('guests'); 
-            $disc_cart['disc_rate'] =  $this->input->post('disc-disc-rate'); 
-            $disc_cart['disc_code'] =  $this->input->post('disc-disc-code'); 
-            $disc_cart['disc_id'] =  $this->input->post('disc-disc-id'); 
-            $disc_cart['disc_type'] =  $this->input->post('type'); 
-            $disc_cart['no_tax'] =  $this->input->post('disc-no-tax'); 
-            $trans_disc_cart[$this->input->post('disc-disc-code')] = $disc_cart;
-            sess_initialize('trans_disc_cart',$trans_disc_cart);
-            // echo var_dump($trans_disc_cart);
+        //    if($this->input->post('disc-no-tax') == 1){
+        //      $trans_cart = sess('trans_cart');
+        //      if($this->input->post('type') == 'item'){
+        //          foreach ($trans_cart as $line_id => $opt) {
+        //             if(in_array($line_id, $items)){
+        //                 $opt['no_tax'] = 1;
+        //                 $trans_cart[$line_id] = $opt;
+        //             }
+        //          }
+        //      }
+        //      else{
+        //          foreach ($trans_cart as $line_id => $opt) {
+        //             $opt['no_tax'] = 1;
+        //             $trans_cart[$line_id] = $opt;
+        //          }            
+        //      }
+        //      sess_initialize('trans_cart',$trans_cart);
+        //      // echo var_dump($trans_cart);
+        //    }
+        //    echo json_encode($sess);
+        // }
+        public function add_trans_disc(){
+           $trans_disc_cart = sess('trans_disc_cart');
+           $disc_cart = array();
+           $error = "";
+           if(isset($trans_disc_cart[$this->input->post('disc-disc-code')])){
+            $disc_cart = $trans_disc_cart[$this->input->post('disc-disc-code')];
+           }
+           if($this->input->post('guests') > 0){
+            if(isset($disc_cart['persons']) && count($disc_cart['persons']) <= $this->input->post('guests')){
+                $disc_cart['guest'] =  $this->input->post('guests'); 
+                $disc_cart['disc_rate'] =  $this->input->post('disc-disc-rate'); 
+                $disc_cart['disc_code'] =  $this->input->post('disc-disc-code'); 
+                $disc_cart['disc_id'] =  $this->input->post('disc-disc-id'); 
+                $disc_cart['disc_type'] =  $this->input->post('type'); 
+                $disc_cart['no_tax'] =  $this->input->post('disc-no-tax'); 
+                $trans_disc_cart[$this->input->post('disc-disc-code')] = $disc_cart;
+                sess_initialize('trans_disc_cart',$trans_disc_cart);
+                // echo var_dump($trans_disc_cart);
+            }
+            else{
+                $error = "Invalid No. of Persons";
+            }
+           }
+           else{
+            $error = "Invalid total No. Of Guests";
+           }
+           echo json_encode(array('error'=>$error));
         }
-        else{
-            $error = "Invalid No. of Persons";
+        public function del_trans_disc($disc_code=null){
+           $trans_disc_cart = sess('trans_disc_cart');
+           unset($trans_disc_cart[$disc_code]);
+           sess_initialize('trans_disc_cart',$trans_disc_cart);
+           
         }
-       }
-       else{
-        $error = "Invalid total No. Of Guests";
-       }
-       echo json_encode(array('error'=>$error));
-    }
-    public function del_trans_disc($disc_code=null){
-       $trans_disc_cart = sess('trans_disc_cart');
-       unset($trans_disc_cart[$disc_code]);
-       sess_initialize('trans_disc_cart',$trans_disc_cart);
-       
-    }
-    // public function del_trans_disc($disc_id=null,$trans_id=null){
-    //    if($trans_id != null){
-    //      $trans_disc_cart = sess('trans_disc_cart');
-    //      if(count($trans_disc_cart) > 0 ){
-    //         if(isset($trans_disc_cart[$disc_id])){
-    //             $items = $trans_disc_cart[$disc_id]['items'];
-    //             if(($key = array_search($trans_id, $items)) !== false) {
-    //                 unset($items[$key]);
-    //                 #
-    //                 if($trans_disc_cart[$disc_id]['no_tax'] == 1){
-    //                     $trans_cart = sess('trans_cart');
-    //                     foreach ($trans_cart as $line_id => $opt) {
-    //                        if($line_id == $key){
-    //                            $opt['no_tax'] = 0;
-    //                            $trans_cart[$line_id] = $opt;
-    //                        }
-    //                     }
-    //                     sess_initialize('trans_cart',$trans_cart);                    
-    //                 }
-    //                 #
-    //             }
-    //             $trans_disc_cart[$disc_id]['items'] = $items;
-    //             $sess = sess_add('trans_disc_cart',$row,$disc_id);
-                
-    //         }
-    //      }
-    //    }
-    //    else{
-    //        $trans_disc_cart = sess('trans_disc_cart');
-    //        if($trans_disc_cart[$disc_id]['no_tax'] == 1){
-    //            $trans_cart = sess('trans_cart');
-    //            foreach ($trans_cart as $line_id => $opt) {
-    //                 $opt['no_tax'] = 0;
-    //                 $trans_cart[$line_id] = $opt;
-    //            }
-    //            sess_initialize('trans_cart',$trans_cart);
-    //        }
-    //        sess_delete('trans_disc_cart',$disc_id);
-    //    }
-    // }
+        // public function del_trans_disc($disc_id=null,$trans_id=null){
+        //    if($trans_id != null){
+        //      $trans_disc_cart = sess('trans_disc_cart');
+        //      if(count($trans_disc_cart) > 0 ){
+        //         if(isset($trans_disc_cart[$disc_id])){
+        //             $items = $trans_disc_cart[$disc_id]['items'];
+        //             if(($key = array_search($trans_id, $items)) !== false) {
+        //                 unset($items[$key]);
+        //                 #
+        //                 if($trans_disc_cart[$disc_id]['no_tax'] == 1){
+        //                     $trans_cart = sess('trans_cart');
+        //                     foreach ($trans_cart as $line_id => $opt) {
+        //                        if($line_id == $key){
+        //                            $opt['no_tax'] = 0;
+        //                            $trans_cart[$line_id] = $opt;
+        //                        }
+        //                     }
+        //                     sess_initialize('trans_cart',$trans_cart);                    
+        //                 }
+        //                 #
+        //             }
+        //             $trans_disc_cart[$disc_id]['items'] = $items;
+        //             $sess = sess_add('trans_disc_cart',$row,$disc_id);
+                    
+        //         }
+        //      }
+        //    }
+        //    else{
+        //        $trans_disc_cart = sess('trans_disc_cart');
+        //        if($trans_disc_cart[$disc_id]['no_tax'] == 1){
+        //            $trans_cart = sess('trans_cart');
+        //            foreach ($trans_cart as $line_id => $opt) {
+        //                 $opt['no_tax'] = 0;
+        //                 $trans_cart[$line_id] = $opt;
+        //            }
+        //            sess_initialize('trans_cart',$trans_cart);
+        //        }
+        //        sess_delete('trans_disc_cart',$disc_id);
+        //    }
+        // }
     #COUNTER
     public function counter($type=null,$sales_id=null){
         $this->load->model('site/site_model');
