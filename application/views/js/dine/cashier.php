@@ -1210,6 +1210,27 @@ $(document).ready(function(){
 			// });
 			return false;
 		});
+		$('#prcss-disc').click(function(){
+			var guests = $('#disc-guests').val();
+			var ref = $(this).attr('ref');
+			console.log(ref);
+			var formData = $('#disc-form').serialize();
+			formData = formData+'&type='+ref+'&guests='+guests;
+			$('.disc-btn-row').goLoad2();
+			$.post(baseUrl+'cashier/add_trans_disc',formData,function(data){
+				$('.disc-btn-row').goLoad2({load:false});
+				if(data.error != ""){
+					rMsg(data.error,'error');
+				}
+				else{
+					rMsg('Added Discount.','success');
+					transTotal();
+				}
+			},'json');
+			// alert(data);
+			// });
+			return false;
+		});
 		$('#remove-disc-btn').click(function(){
 			var disc_code = $('#disc-disc-code').val();
 			$.post(baseUrl+'cashier/del_trans_disc/'+disc_code,function(data){
@@ -1848,6 +1869,12 @@ $(document).ready(function(){
 				$.each(data.ids,function(id,opt){
 					$('#item-disc-btn-'+id).click(function(){
 						var idisc = $(this);
+						if(opt.disc_code == 'SNDISC' || opt.disc_code == 'PWDISC'){
+							$('#prcss-disc').attr('ref','equal');
+						}
+						else{
+							$('#prcss-disc').attr('ref','all');
+						}
 						$.callManager({
 		 					success : function(){
 								loadsDiv('discount',null,null,null);
@@ -2036,6 +2063,20 @@ $(document).ready(function(){
 		});
 		$('#debit-card-btn').click(function(){
 			loadDivs('debit-payment',true);
+			var amount = $('#settle').attr('balance');
+			$('#debit-amt').val(amount,2);
+			return false;
+		});
+		$('#smac-card-btn').click(function(){
+			loadDivs('smac-payment',true);
+			var amount = $('#settle').attr('balance');
+			$('#smac-amt').val(amount,2);
+			return false;
+		});
+		$('#eplus-card-btn').click(function(){
+			loadDivs('eplus-payment',true);
+			var amount = $('#settle').attr('balance');
+			$('#eplus-amt').val(amount,2);
 			return false;
 		});
 		$('#gift-cheque-btn').click(function(){
@@ -2183,6 +2224,43 @@ $(document).ready(function(){
 			return false;
 		});
 		/* End of DEBIT PAYMENT */
+		$('#smac-card-num,#smac-amt').focus(function(){
+			$('#tbl-smac-target').attr('target','#'+$(this).attr('id'));
+		});
+		$('#smac-enter-btn').on('click',function(event){
+			event.preventDefault();
+			if (! $.isNumeric($('#smac-amt').val().replace(/,/g ,"")) ) {
+				rMsg("Please enter a valid amount","error");
+				return false;
+			}
+			var amount = $('#smac-amt').val();
+			var id = $('#settle').attr('sales');
+			addPayment(id,amount,'smac');
+			return false;
+		});
+		$('#smac-card-num,#smac-app-code,#smac-amt').focus(function()
+		{
+			$('#tbl-smac-target').attr('target','#'+$(this).attr('id'));
+		});
+		$('#eplus-card-num,#eplus-amt').focus(function(){
+			$('#tbl-eplus-target').attr('target','#'+$(this).attr('id'));
+		});
+		$('#eplus-enter-btn').on('click',function(event){
+			event.preventDefault();
+			if (! $.isNumeric($('#eplus-amt').val().replace(/,/g ,"")) ) {
+				rMsg("Please enter a valid amount","error");
+				return false;
+			}
+			var amount = $('#eplus-amt').val();
+			var id = $('#settle').attr('sales');
+			addPayment(id,amount,'eplus');
+			return false;
+		});
+		$('#eplus-card-num,#eplus-app-code,#eplus-amt').focus(function()
+		{
+			$('#tbl-eplus-target').attr('target','#'+$(this).attr('id'));
+		});
+		/* End of eplus PAYMENT */
 		/* CREDIT PAYMENT */
 		$('.credit-type-btn').on('click',function(event)
 		{
@@ -2278,7 +2356,7 @@ $(document).ready(function(){
 			$('#coupon-enter-btn').attr('mode','search');
 		});
 		/* End of COUPON */
-		$('#cancel-cash-btn,#trsansactions-close-btn,#cancel-debit-btn,#cancel-credit-btn,#cancel-gc-btn,#cancel-coupon-btn').click(function(){
+		$('#cancel-cash-btn,#trsansactions-close-btn,#cancel-debit-btn,#cancel-smac-btn,#cancel-eplus-btn,#cancel-credit-btn,#cancel-gc-btn,#cancel-coupon-btn').click(function(){
 			loadDivs('select-payment',false);
 			return false;
 		});
@@ -2304,6 +2382,10 @@ $(document).ready(function(){
 						'&approval_code='+$('#credit-app-code').val();
 			} else if (type == 'debit') {
 				formData = 'card_number='+$('#debit-card-num').val()+'&approval_code='+$('#debit-app-code').val();
+			} else if (type == 'smac') {
+				formData = 'card_number='+$('#smac-card-num').val();	
+			} else if (type == 'eplus') {
+				formData = 'card_number='+$('#eplus-card-num').val();	
 			} else if (type == 'gc') {
 				formData = 'gc_id='+$('#hid-gc-id').val()+'&gc_code='+$('#gc-code').val();
 			} else if (type == 'coupon') {

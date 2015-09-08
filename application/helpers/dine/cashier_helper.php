@@ -457,17 +457,17 @@ function counterPage($type=null,$time=null,$loaded=null,$order=array(),$typeCN=a
 								 	 	$CI->make->input(null,'disc-guests',$guestN,'Total No. Of Guests',array(),fa('fa-user'));
 								 	 $CI->make->eDivCol();
 								 $CI->make->eDivRow();
-								 $CI->make->sDivRow(array('style'=>'margin-bottom:10px;'));
-								 	 $CI->make->sDivCol(4);
-								 	 	$CI->make->button('ALL ITEMS',array('ref'=>'all','class'=>'disc-btn-row btn-block counter-btn-teal'));
-								 	 $CI->make->eDivCol();
-								 	 $CI->make->sDivCol(4);
-								 	 	$CI->make->button('EQUALLY DIVIDED',array('ref'=>'equal','class'=>'disc-btn-row btn-block counter-btn-orange'));
-								 	 $CI->make->eDivCol();
-								 	 $CI->make->sDivCol(4);
-								 	 	$CI->make->button(fa('fa fa-times fa-lg fa-fw').'REMOVE',array('id'=>'remove-disc-btn','class'=>'btn-block counter-btn-red'));
-								 	 $CI->make->eDivCol();
-								 $CI->make->eDivRow();
+								 // $CI->make->sDivRow(array('style'=>'margin-bottom:10px;'));
+								 // 	 $CI->make->sDivCol(4);
+								 // 	 	$CI->make->button('ALL ITEMS',array('ref'=>'all','class'=>'disc-btn-row btn-block counter-btn-teal'));
+								 // 	 $CI->make->eDivCol();
+								 // 	 $CI->make->sDivCol(4);
+								 // 	 	$CI->make->button('EQUALLY DIVIDED',array('ref'=>'equal','class'=>'disc-btn-row btn-block counter-btn-orange'));
+								 // 	 $CI->make->eDivCol();
+								 // 	 $CI->make->sDivCol(4);
+								 // 	 	$CI->make->button(fa('fa fa-times fa-lg fa-fw').'REMOVE',array('id'=>'remove-disc-btn','class'=>'btn-block counter-btn-red'));
+								 // 	 $CI->make->eDivCol();
+								 // $CI->make->eDivRow();
 								 $CI->make->sForm("",array('id'=>'disc-form'));
 									 $CI->make->sDivRow(array('style'=>'margin-bottom:10px;'));
 									 	 $CI->make->sDivCol(12);
@@ -492,9 +492,18 @@ function counterPage($type=null,$time=null,$loaded=null,$order=array(),$typeCN=a
 									 	 $CI->make->eDivCol();
 									 $CI->make->eDivRow();
 									 $CI->make->sDivRow(array('style'=>'margin-bottom:10px;'));
-										 $CI->make->sDivCol(12);
+										 $CI->make->sDivCol(6);
 										 	$CI->make->button(fa('fa-plus fa-lg fa-fw').' ADD ',array('id'=>'add-disc-person-btn','class'=>'btn-block counter-btn-green'));
 									 	 $CI->make->eDivCol();
+										 $CI->make->sDivCol(6);
+									 	 	$CI->make->button(fa('fa fa-times fa-lg fa-fw').'REMOVE',array('id'=>'remove-disc-btn','class'=>'btn-block counter-btn-red'));
+									 	 $CI->make->eDivCol();
+									 $CI->make->eDivRow();
+									 $CI->make->sDivRow(array('style'=>'margin-bottom:10px;'));
+										 $CI->make->sDivCol(12);
+										 	$CI->make->button(' PROCESS DISCOUNT ',array('id'=>'prcss-disc','class'=>'btn-block counter-btn-green'));
+									 	 $CI->make->eDivCol();
+									 	 // 'ref'=>'equal',
 									 $CI->make->eDivRow();
 									 $CI->make->sDivRow();
 										 $CI->make->sDivCol(12);
@@ -680,6 +689,8 @@ function settlePage($ord=null,$det=null,$discs=null,$totals=null,$charges=null){
 												 "debit-card"	=> fa('fa-credit-card fa-lg fa-fw')."<br> DEBIT CARD",
 												 "gift-cheque"	=> fa('fa-gift fa-lg fa-fw')."<br> GIFT CHEQUE",
 												 "coupon"	=> fa('fa-tags fa-lg fa-fw')."<br> Coupon",
+												 "smac-card"		=> fa('fa-credit-card fa-lg fa-fw')."<br> SMAC",
+												 "eplus-card"		=> fa('fa-credit-card fa-lg fa-fw')."<br> E-Plus",
 												 // "sign-chit"	=> fa('fa-tag fa-lg fa-fw')."<br> SIGN CHIT",
 												 // "check"	=> fa('fa-check-square-o fa-lg fa-fw')."<br> CHECK"
 												 );
@@ -1029,6 +1040,97 @@ function settlePage($ord=null,$det=null,$discs=null,$totals=null,$charges=null){
 						$CI->make->eBoxBody();
 					$CI->make->eBox();
 
+					$CI->make->sBox('default',array('class'=>'loads-div smac-payment-div box-solid','style'=>'display:none;'));
+						$CI->make->sBoxHead(array('class'=>'bg-green'));
+							$CI->make->boxTitle(' SMAC PAYMENT');
+						$CI->make->eBoxHead();
+						$CI->make->sBoxBody(array('style'=>'background-color:#F4EDE0;'));
+							$CI->make->sDivRow(array('style'=>'margin:auto 0;'));
+								$CI->make->sDivCol(6);
+									$CI->make->input('Card #','smac-card-num','','',array('maxlength'=>'30',
+										'style'=>
+											'width:100%;
+											height:100%;
+											font-size:34px;
+											font-weight:bold;
+											text-align:right;
+											border:none;
+											border-radius:5px !important;
+											box-shadow:none;
+											',
+										)
+									);
+									$CI->make->input('Amount','smac-amt',number_format($ord['balance'],2),'',array('maxlength'=>'10',
+										'style'=>
+											'width:100%;
+											height:100%;
+											font-size:34px;
+											font-weight:bold;
+											text-align:right;
+											border:none;
+											border-radius:5px !important;
+											box-shadow:none;
+											',
+										)
+									);
+								$CI->make->eDivCol();
+								$CI->make->sDivCol(6);
+									$CI->make->append(onScrNumOnlyTarget(
+										'tbl-smac-target',
+										'#smac-card-num',
+										'smac-enter-btn',
+										'cancel-smac-btn',
+										'Change method'));
+								$CI->make->eDivCol();
+							$CI->make->eDivRow();
+						$CI->make->eBoxBody();
+					$CI->make->eBox();
+					
+					$CI->make->sBox('default',array('class'=>'loads-div eplus-payment-div box-solid','style'=>'display:none;'));
+						$CI->make->sBoxHead(array('class'=>'bg-green'));
+							$CI->make->boxTitle(' E-Plus PAYMENT');
+						$CI->make->eBoxHead();
+						$CI->make->sBoxBody(array('style'=>'background-color:#F4EDE0;'));
+							$CI->make->sDivRow(array('style'=>'margin:auto 0;'));
+								$CI->make->sDivCol(6);
+									$CI->make->input('Card #','eplus-card-num','','',array('maxlength'=>'30',
+										'style'=>
+											'width:100%;
+											height:100%;
+											font-size:34px;
+											font-weight:bold;
+											text-align:right;
+											border:none;
+											border-radius:5px !important;
+											box-shadow:none;
+											',
+										)
+									);
+									$CI->make->input('Amount','eplus-amt',number_format($ord['balance'],2),'',array('maxlength'=>'10',
+										'style'=>
+											'width:100%;
+											height:100%;
+											font-size:34px;
+											font-weight:bold;
+											text-align:right;
+											border:none;
+											border-radius:5px !important;
+											box-shadow:none;
+											',
+										)
+									);
+								$CI->make->eDivCol();
+								$CI->make->sDivCol(6);
+									$CI->make->append(onScrNumOnlyTarget(
+										'tbl-eplus-target',
+										'#eplus-card-num',
+										'eplus-enter-btn',
+										'cancel-eplus-btn',
+										'Change method'));
+								$CI->make->eDivCol();
+							$CI->make->eDivRow();
+						$CI->make->eBoxBody();
+					$CI->make->eBox();
 
 				$CI->make->eDivCol();
 			$CI->make->eDivRow();

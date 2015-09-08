@@ -2963,6 +2963,11 @@ class Cashier extends Reads {
             if(isset($trans_type_cart[0]['guest'])){
                 $guest = $trans_type_cart[0]['guest'];
             }
+            if(count($trans_disc_cart) > 0){
+                foreach ($trans_disc_cart as $disc_code => $dc) {
+                    $guest = $dc['guest'];
+                }
+            } 
             if(isset($trans_type_cart[0]['customer_id'])){
                 $customer = $trans_type_cart[0]['customer_id'];
             }
@@ -3503,6 +3508,10 @@ class Cashier extends Reads {
             } elseif ($type=="debit") {
                 $payment['card_number'] = $this->input->post('card_number');
                 $payment['approval_code'] = $this->input->post('approval_code');
+            } elseif ($type=="smac") {
+                $payment['card_number'] = $this->input->post('card_number');
+            } elseif ($type=="eplus") {
+                $payment['card_number'] = $this->input->post('card_number');
             } elseif ($type=="gc") {
                 $this->load->model('dine/gift_cards_model');
                 $gc_id = $this->input->post('gc_id');

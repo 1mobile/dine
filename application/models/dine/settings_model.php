@@ -283,6 +283,7 @@ class Settings_model extends CI_Model{
 				}else{
 					$this->db->where('tables.tbl_id',$id);
 				}
+			$this->db->where('tables.inactive',0);
 			$this->db->order_by('tbl_id desc');
 			$query = $this->db->get();
 			$result = $query->result();
@@ -305,7 +306,8 @@ class Settings_model extends CI_Model{
 	}
 	public function delete_all_tables(){
 		// $this->db->where('tbl_id', $id);
-		$this->db->empty_table('tables');
+		// $this->db->empty_table('tables');
+		$this->db->update('tables', array('inactive'=>1));
 	}
 	//-----------Terminals-----start-----allyn
 	public function get_terminal($id=null){

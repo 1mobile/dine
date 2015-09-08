@@ -447,7 +447,6 @@ class Prints extends CI_Controller {
             $this->do_print($print_str,$asJson);
         }    
         public function system_sales_rep($asJson=false){
-            //periperi
             $print_str = $this->print_header();
             $user = $this->session->userdata('user');
             $time = $this->site_model->get_db_now();
@@ -468,7 +467,7 @@ class Prints extends CI_Controller {
             
             
             
-            $gross = $trans_menus['gross'] - $trans['void']; 
+            $gross = $trans_menus['gross']; 
             $net = $trans['net'];
             $void = $trans['void'];
             $charges = $trans_charges['total']; 
@@ -496,135 +495,30 @@ class Prints extends CI_Controller {
             $print_str .= align_center(sql2DateTime($post['from'])." - ".sql2DateTime($post['to']),38," ")."\r\n";
             if($post['employee'] != "All")
                 $print_str .= align_center($post['employee'],38," ")."\r\n";
-            $print_str .= "======================================"."\r\n";
-            $print_str .= append_chars('SETTLEMENT','right',11," ")."\r\n";
-            $print_str .= "--------------------------------------"."\r\n";
-
+            
             $loc_txt = numInt(($local_tax));
             // if($local_tax > 0)
             //     $loc_txt = "(".numInt(($local_tax)).")";
             $net_no_adds = $net-($charges+$local_tax);
             $nontaxable = $no_tax - $no_tax_disc;
-            // $taxable =   ($net_no_adds - ($tax + ($nontaxable+$zero_rated))  );
-            $taxable =   ($gross - $discounts - $less_vat - $nontaxable) / 1.12;
-            // $taxable =   $discounts;
+            $taxable =   ($net_no_adds - ($tax + ($nontaxable+$zero_rated))  );
             $total_net = ($taxable) + ($nontaxable+$zero_rated) + $tax + $local_tax;
             $add_gt = $taxable+$nontaxable+$zero_rated;
             // $taxable = ($net_no_adds - ($tax + $no_tax + $zero_rated)); 
+            $print_str .= "\r\n";
             $nsss = $taxable +  $nontaxable +  $zero_rated; 
+            $print_str .= append_chars(substrwords('NET SALES',18,""),"right",23," ")
+                         .append_chars(numInt(($nsss)),"left",13," ")."\r\n";
+            $print_str .= append_chars(substrwords('VAT',18,""),"right",23," ")
+                                     .append_chars(numInt($tax),"left",13," ")."\r\n";  
+            $print_str .= append_chars(substrwords('Local Tax',18,""),"right",23," ")
+                         .append_chars($loc_txt,"left",13," ")."\r\n";  
+            $print_str .= append_chars("","right",23," ").append_chars("-----------","left",13," ")."\r\n";                         
             $print_str .= append_chars(substrwords('GROSS SALES',18,""),"right",23," ")
-                                     .append_chars(numInt(($gross + $charges)),"left",13," ")."\r\n"; 
-            $print_str .= append_chars(substrwords('TOTAL DISCOUNTS',18,""),"right",23," ")
-                                     .append_chars('-'.numInt(($discounts + $less_vat)),"left",13," ")."\r\n";   
-            #Discounts
-            $types = $trans_discounts['types'];
-            $qty = 0;
-            // $print_str .= append_chars(substrwords('Discounts:',18,""),"right",18," ").align_center(null,5," ")
-            //               .append_chars(null,"left",13," ")."\r\n"; 
-            foreach ($types as $code => $val) {
-                $print_str .= append_chars(substrwords(ucwords(strtoupper($val['name'])),18,""),"left",18," ").align_center('',5," ")
-                              .append_chars('(-'.Num($val['amount'],2).')',"left",13," ")."\r\n";
-                $qty += $val['qty'];
-            }
-            $print_str .= append_chars(substrwords(ucwords(strtoupper('SEN. VAT EXEMPT')),18,""),"left",18," ").align_center('',5," ")
-                              .append_chars('(-'.numInt($less_vat).")","left",13," ")."\r\n";
-            $print_str .= "--------------------------------------"."\r\n";
-            $final_gross = $gross + $charges;
-            $print_str .= append_chars(substrwords('GROSS LESS DISCOUNT',23,""),"right",23," ")
-                                     .append_chars(numInt(($final_gross - $discounts - $less_vat)),"left",13," ")."\r\n";
-            $print_str .= "--------------------------------------"."\r\n";
-            #PAYMENTS
-            $payments_types = $payments['types'];
-            $payments_total = $payments['total'];
-            $pay_qty = 0;
-            // $print_str .= append_chars(substrwords('Payment Breakdown:',18,""),"right",18," ").align_center(null,5," ")
-            //               .append_chars(null,"left",13," ")."\r\n"; 
-            foreach ($payments_types as $code => $val) {
-                $print_str .= append_chars(substrwords(ucwords(strtoupper($code)),18,""),"right",18," ").align_center($val['qty'],5," ")
-                              .append_chars(numInt($val['amount']),"left",13," ")."\r\n";
-                $pay_qty += $val['qty'];
-            }
-            //$print_str .= "--------------------------------------"."\r\n";
-            $print_str .= append_chars("","right",18," ").align_center("",5," ")
-                          .append_chars('-----------',"left",13," ")."\r\n";
-            $print_str .= append_chars(substrwords('TOTAL PAYMENTS',18,""),"right",18," ").align_center($pay_qty,5," ")
-                          .append_chars(numInt($payments_total),"left",13," ")."\r\n"; 
-            $print_str .= "======================================"."\r\n";
-            $print_str .= append_chars('SALES ACCOUNTING','right',11," ")."\r\n";
-            //$print_str .= "--------------------------------------"."\r\n";
-
-            $print_str .= append_chars(substrwords('GROSS SALES',18,""),"right",23," ")
-                                     .append_chars(numInt(($final_gross)),"left",13," ")."\r\n"; 
-            $print_str .= append_chars(substrwords('TOTAL DISCOUNTS',18,""),"right",23," ")
-                                     .append_chars('-'.numInt(($discounts + $less_vat)),"left",13," ")."\r\n";
-            $print_str .= append_chars("","right",18," ").align_center("",5," ")
-                          .append_chars('-----------',"left",13," ")."\r\n";                          
-            $print_str .= append_chars(substrwords('GROSS LESS DISCOUNT',23,""),"right",23," ")
-                                     .append_chars(numInt(($final_gross - $discounts - $less_vat)),"left",13," ")."\r\n";                         
-            //$print_str .= "--------------------------------------"."\r\n";                          
-            $print_str .= append_chars("","right",18," ").align_center("",5," ")
-                          .append_chars('-----------',"left",13," ")."\r\n";
-
-            #CHARGES
-            $types = $trans_charges['types'];
-            $qty = 0;
-            // $print_str .= append_chars(substrwords('Charges:',18,""),"right",18," ").align_center(null,5," ")
-            //               .append_chars(null,"left",13," ")."\r\n"; 
-            $print_str .= append_chars(substrwords('TOTAL CHARGES',18,""),"right",18," ").align_center('',5," ")
-                          .append_chars('-'.numInt($charges),"left",13," ")."\r\n"; 
-            foreach ($types as $code => $val) {
-                $print_str .= append_chars(substrwords(ucwords(strtoupper($val['name'])),18,""),"left",18," ").align_center('',5," ")
-                              .append_chars('('.numInt($val['amount']).')',"left",13," ")."\r\n";
-                $qty += $val['qty'];
-            }
-            // $print_str .= "-----------------"."\r\n";
-            // $print_str .= "\r\n";
-
-            $vat_ = $taxable * .12;                        
-            // $print_str .= append_chars(substrwords('VAT',18,""),"right",18," ").align_center('',5," ")
-            //               .append_chars(numInt($vat_),"left",13," ")."\r\n";
-            //$print_str .= "--------------------------------------"."\r\n";
-            $print_str .= append_chars("","right",18," ").align_center("",5," ")
-                          .append_chars('-----------',"left",13," ")."\r\n";
-            $gross_less_disc = $final_gross - $discounts - $less_vat;
-            $print_str .= append_chars(substrwords('NET SALES',23,""),"right",23," ")
-                                     .append_chars(numInt(($gross_less_disc - $charges)),"left",13," ")."\r\n"; 
-            $print_str .= "======================================"."\r\n";
-            $print_str .= append_chars(substrwords('VAT SALES',23,""),"right",23," ")
-                                     .append_chars(numInt($taxable),"left",13," ")."\r\n";
-            $print_str .= append_chars(substrwords('VAT',23,""),"right",23," ")
-                                     .append_chars(numInt($vat_),"left",13," ")."\r\n";
-            $print_str .= append_chars(substrwords('VAT EXEMPT SALES',23,""),"right",23," ")
-                                     .append_chars(numInt($nontaxable),"left",13," ")."\r\n";
-            $print_str .= append_chars(substrwords('ZERO RATED',23,""),"right",23," ")
-                                     .append_chars(numInt($zero_rated),"left",13," ")."\r\n"; 
-            $print_str .= "--------------------------------------"."\r\n"; 
-            $gross_less_disc = $final_gross - $discounts - $less_vat;
-            $print_str .= append_chars(substrwords('NET SALES',23,""),"right",23," ")
-                                     .append_chars(numInt(($taxable + $nontaxable + $zero_rated + $vat_)),"left",13," ")."\r\n";
-            $print_str .= "======================================"."\r\n";
+                                     .append_chars(numInt(($total_net)),"left",13," ")."\r\n";   
             $print_str .= append_chars(substrwords('VOID SALES',18,""),"right",23," ")
                          .append_chars(numInt(($void)),"left",13," ")."\r\n";
 
-
-            // $print_str .= "-----------------"."\r\n";
-            // $print_str .= append_chars(substrwords('Total Discounts',18,""),"right",18," ").align_center($qty,5," ")
-            //               .append_chars(numInt($discounts),"left",13," ")."\r\n"; 
-            // $print_str .= append_chars(substrwords('VAT EXEMPT',18,""),"right",23," ")
-            //                          .append_chars(numInt($less_vat),"left",13," ")."\r\n";                
-            // $print_str .= "\r\n";
-
-
-            // $print_str .= append_chars(substrwords('NET SALES',18,""),"right",23," ")
-            //              .append_chars(numInt(($nsss)),"left",13," ")."\r\n";
-            // $print_str .= append_chars(substrwords('VAT',18,""),"right",23," ")
-            //                          .append_chars(numInt($tax),"left",13," ")."\r\n";  
-            // $print_str .= append_chars(substrwords('Local Tax',18,""),"right",23," ")
-            //              .append_chars($loc_txt,"left",13," ")."\r\n";  
-            // $print_str .= append_chars("","right",23," ").append_chars("-----------","left",13," ")."\r\n";                         
-            // $print_str .= append_chars(substrwords('VOID SALES',18,""),"right",23," ")
-            //              .append_chars(numInt(($void)),"left",13," ")."\r\n";
-
             
 
             $print_str .= "\r\n";
@@ -755,17 +649,17 @@ class Prints extends CI_Controller {
                               .append_chars(numInt($total+$trans_menus['mods_total']),"left",13," ")."\r\n";               
 
 
-            // $print_str .= "\r\n";
-            // $print_str .= "======================================"."\r\n";
-            // $print_str .= append_chars(substrwords('VATABLE SALES',18,""),"right",23," ")
-            //              .append_chars(numInt(($taxable)),"left",13," ")."\r\n";
-            // $print_str .= append_chars(substrwords('VAT EXEMPT SALES',18,""),"right",23," ")
-            //              .append_chars(numInt(($nontaxable)),"left",13," ")."\r\n";
-            // $print_str .= append_chars(substrwords('ZERO RATED',13,""),"right",23," ")
-            //              .append_chars(numInt(($zero_rated)),"left",13," ")."\r\n";
-            // $print_str .= append_chars("","right",23," ").append_chars("-----------","left",13," ")."\r\n";     
-            // $print_str .= append_chars(substrwords('NET SALES',18,""),"right",23," ")
-            //                          .append_chars(numInt(($nsss)),"left",13," ")."\r\n";                             
+            $print_str .= "\r\n";
+            $print_str .= "======================================"."\r\n";
+            $print_str .= append_chars(substrwords('VATABLE SALES',18,""),"right",23," ")
+                         .append_chars(numInt(($taxable)),"left",13," ")."\r\n";
+            $print_str .= append_chars(substrwords('VAT EXEMPT SALES',18,""),"right",23," ")
+                         .append_chars(numInt(($nontaxable)),"left",13," ")."\r\n";
+            $print_str .= append_chars(substrwords('ZERO RATED',13,""),"right",23," ")
+                         .append_chars(numInt(($zero_rated)),"left",13," ")."\r\n";
+            $print_str .= append_chars("","right",23," ").append_chars("-----------","left",13," ")."\r\n";     
+            $print_str .= append_chars(substrwords('NET SALES',18,""),"right",23," ")
+                                     .append_chars(numInt(($nsss)),"left",13," ")."\r\n";                             
             $print_str .= "\r\n";
             $print_str .= append_chars(substrwords('Invoice Start: ',18,""),"right",18," ").align_center('',5," ")
                          .append_chars(iSetObj($trans['first_ref'],'trans_ref'),"left",13," ")."\r\n";
@@ -794,347 +688,6 @@ class Prints extends CI_Controller {
 
             $this->do_print($print_str,$asJson);
         }
-
-        public function system_sales_rep_hapchan($asJson=false){
-            ////hapchan
-            $print_str = $this->print_header();
-            $user = $this->session->userdata('user');
-            $time = $this->site_model->get_db_now();
-            $post = $this->set_post();
-            $curr = $this->search_current();
-            $trans = $this->trans_sales($post['args'],$curr);
-            $sales = $trans['sales'];
-            $trans_menus = $this->menu_sales($sales['settled']['ids'],$curr);
-            $trans_charges = $this->charges_sales($sales['settled']['ids'],$curr);
-            $trans_discounts = $this->discounts_sales($sales['settled']['ids'],$curr);
-            $tax_disc = $trans_discounts['tax_disc_total']; 
-            $no_tax_disc = $trans_discounts['no_tax_disc_total']; 
-            $trans_local_tax = $this->local_tax_sales($sales['settled']['ids'],$curr);
-            $trans_tax = $this->tax_sales($sales['settled']['ids'],$curr);
-            $trans_no_tax = $this->no_tax_sales($sales['settled']['ids'],$curr);
-            $trans_zero_rated = $this->zero_rated_sales($sales['settled']['ids'],$curr);
-            $payments = $this->payment_sales($sales['settled']['ids'],$curr);
-            
-            
-            $gross = $trans_menus['gross'] - $trans['void']; 
-            $net = $trans['net'];
-            $void = $trans['void'];
-            $charges = $trans_charges['total']; 
-            $discounts = $trans_discounts['total']; 
-            $local_tax = $trans_local_tax['total']; 
-            $less_vat = (($gross+$charges+$local_tax) - $discounts) - $net;
-            // $less_vat  = $no_tax_disc * 0.60;
-            if($less_vat < 0)
-                $less_vat = 0;
-
-            $tax = $trans_tax['total'];
-            $no_tax = $trans_no_tax['total'];
-            $zero_rated = $trans_zero_rated['total'];
-            $no_tax -= $zero_rated;
-            
-            $title_name = "SYSTEM SALES REPORT";
-            if($post['title'] != "")
-                $title_name = $post['title'];
-
-            $print_str .= align_center($title_name,38," ")."\r\n";
-            $print_str .= align_center("TERMINAL ".$post['terminal'],38," ")."\r\n";
-            $print_str .= append_chars('Printed On','right',11," ").append_chars(": ".date2SqlDateTime($time),'right',19," ")."\r\n";
-            $print_str .= append_chars('Printed BY','right',11," ").append_chars(": ".$user['full_name'],'right',19," ")."\r\n";
-            $print_str .= "======================================"."\r\n";
-            $print_str .= align_center(sql2DateTime($post['from'])." - ".sql2DateTime($post['to']),38," ")."\r\n";
-            if($post['employee'] != "All")
-                $print_str .= align_center($post['employee'],38," ")."\r\n";
-            $print_str .= "======================================"."\r\n";
-
-            $loc_txt = numInt(($local_tax));
-            // if($local_tax > 0)
-            //     $loc_txt = "(".numInt(($local_tax)).")";
-            $net_no_adds = $net-($charges+$local_tax);
-            $nontaxable = $no_tax - $no_tax_disc;
-            // $taxable =   ($net_no_adds - ($tax + ($nontaxable+$zero_rated))  );
-            $taxable =   ($gross + $charges - $discounts - $less_vat - $nontaxable) / 1.12;
-            // $taxable =   $discounts;
-            $total_net = ($taxable) + ($nontaxable+$zero_rated) + $tax + $local_tax;
-            $add_gt = $taxable+$nontaxable+$zero_rated;
-            // $taxable = ($net_no_adds - ($tax + $no_tax + $zero_rated)); 
-            $nsss = $taxable +  $nontaxable +  $zero_rated; 
-            $print_str .= append_chars(substrwords('GROSS SALES',18,""),"right",23," ")
-                                     .append_chars(numInt($gross),"left",13," ")."\r\n"; 
-            // $print_str .= append_chars(substrwords('TOTAL DISCOUNTS',18,""),"right",23," ")
-            //                          .append_chars('-'.numInt(($discounts + $less_vat)),"left",13," ")."\r\n"; 
-            #CHARGES
-            $types = $trans_charges['types'];
-            $qty = 0;
-            foreach ($types as $code => $val) {
-                $print_str .= append_chars(substrwords(ucwords(strtolower($val['name'])),18,""),"right",18," ").align_center("",5," ")
-                              .append_chars(numInt($val['amount']),"left",13," ")."\r\n";
-                $qty += $val['qty'];
-            }  
-            #Discounts
-            $types = $trans_discounts['types'];
-            $qty = 0;
-            // $print_str .= append_chars(substrwords('Discounts:',18,""),"right",18," ").align_center(null,5," ")
-            //               .append_chars(null,"left",13," ")."\r\n"; 
-            foreach ($types as $code => $val) {
-                $print_str .= append_chars(substrwords(ucwords(strtoupper($val['name'])),18,""),"right",18," ").align_center('',5," ")
-                              .append_chars('-'.Num($val['amount'],2),"left",13," ")."\r\n";
-                $qty += $val['qty'];
-            }
-            $print_str .= append_chars(substrwords(ucwords(strtoupper('SEN. VAT EXEMPT')),18,""),"right",18," ").align_center('',5," ")
-                              .append_chars('-'.numInt($less_vat),"left",13," ")."\r\n";
-            //$print_str .= "--------------------------------------"."\r\n";
-            
-            $print_str .= append_chars('',"right",18," ").align_center('',5," ")
-                              .append_chars('-------------',"left",13," ")."\r\n";
-            $net_sales = $gross + $charges - $discounts - $less_vat;
-            $print_str .= append_chars(substrwords('NET SALES',18,""),"right",18," ").align_center("",5," ")
-                          .append_chars(numInt($net_sales),"left",13," ")."\r\n\r\n"; 
-            // $print_str .= "\r\n";
-           
-            #PAYMENTS
-            $payments_types = $payments['types'];
-            $payments_total = $payments['total'];
-            $pay_qty = 0;
-            $print_str .= append_chars(substrwords('Payment Breakdown:',18,""),"right",18," ").align_center(null,5," ")
-                          .append_chars(null,"left",13," ")."\r\n"; 
-            foreach ($payments_types as $code => $val) {
-                $print_str .= append_chars(substrwords(ucwords(strtoupper($code)),18,""),"right",18," ").align_center($val['qty'],5," ")
-                              .append_chars(numInt($val['amount']),"left",13," ")."\r\n";
-                $pay_qty += $val['qty'];
-            }
-            $print_str .= append_chars('',"right",18," ").align_center('',5," ")
-                              .append_chars('-------------',"left",13," ")."\r\n";
-            $print_str .= append_chars(substrwords('TOTAL PAYMENTS',18,""),"right",18," ").align_center($pay_qty,5," ")
-                          .append_chars(numInt($payments_total),"left",13," ")."\r\n\r\n";                        
-
-            // #CHARGES
-            // $types = $trans_charges['types'];
-            // $qty = 0;
-            // // $print_str .= append_chars(substrwords('Charges:',18,""),"right",18," ").align_center(null,5," ")
-            // //               .append_chars(null,"left",13," ")."\r\n"; 
-            // $print_str .= append_chars(substrwords('TOTAL CHARGES',18,""),"right",18," ").align_center('',5," ")
-            //               .append_chars(numInt($charges),"left",13," ")."\r\n"; 
-            // foreach ($types as $code => $val) {
-            //     $print_str .= append_chars(substrwords(ucwords(strtoupper($val['name'])),18,""),"left",18," ").align_center('',5," ")
-            //                   .append_chars(numInt($val['amount']),"left",13," ")."\r\n";
-            //     $qty += $val['qty'];
-            // }
-            // // $print_str .= "-----------------"."\r\n";
-            // // $print_str .= "\r\n";
-            $final_gross = $gross;
-            $vat_ = $taxable * .12;                        
-            // $print_str .= append_chars(substrwords('VAT',18,""),"right",18," ").align_center('',5," ")
-            //               .append_chars(numInt($vat_),"left",13," ")."\r\n";
-            //$print_str .= "--------------------------------------"."\r\n"; 
-            //$gross_less_disc = $final_gross - $discounts - $less_vat;
-            // $print_str .= append_chars(substrwords('NET SALES',23,""),"right",23," ")
-            //                          .append_chars(numInt(($gross_less_disc - $charges)),"left",13," ")."\r\n"; 
-            //$print_str .= "======================================"."\r\n";
-            $print_str .= append_chars(substrwords('VAT SALES',23,""),"right",23," ")
-                                     .append_chars(numInt($taxable),"left",13," ")."\r\n";
-            $print_str .= append_chars(substrwords('VAT',23,""),"right",23," ")
-                                     .append_chars(numInt($vat_),"left",13," ")."\r\n";
-            $print_str .= append_chars(substrwords('VAT EXEMPT SALES',23,""),"right",23," ")
-                                     .append_chars(numInt($nontaxable),"left",13," ")."\r\n";
-            $print_str .= append_chars(substrwords('ZERO RATED',23,""),"right",23," ")
-                                     .append_chars(numInt($zero_rated),"left",13," ")."\r\n"; 
-            $print_str .= "--------------------------------------"."\r\n"; 
-            $gross_less_disc = $final_gross - $discounts - $less_vat;
-            $print_str .= append_chars(substrwords('NET SALES',23,""),"right",23," ")
-                                     .append_chars(numInt(($taxable + $nontaxable + $zero_rated + $vat_)),"left",13," ")."\r\n";
-            // $print_str .= "======================================"."\r\n";
-            // $print_str .= append_chars(substrwords('VOID SALES',18,""),"right",23," ")
-            //              .append_chars(numInt(($void)),"left",13," ")."\r\n";
-
-
-            // // $print_str .= "-----------------"."\r\n";
-            // // $print_str .= append_chars(substrwords('Total Discounts',18,""),"right",18," ").align_center($qty,5," ")
-            // //               .append_chars(numInt($discounts),"left",13," ")."\r\n"; 
-            // // $print_str .= append_chars(substrwords('VAT EXEMPT',18,""),"right",23," ")
-            // //                          .append_chars(numInt($less_vat),"left",13," ")."\r\n";                
-            // // $print_str .= "\r\n";
-
-
-            // // $print_str .= append_chars(substrwords('NET SALES',18,""),"right",23," ")
-            // //              .append_chars(numInt(($nsss)),"left",13," ")."\r\n";
-            // // $print_str .= append_chars(substrwords('VAT',18,""),"right",23," ")
-            // //                          .append_chars(numInt($tax),"left",13," ")."\r\n";  
-            // // $print_str .= append_chars(substrwords('Local Tax',18,""),"right",23," ")
-            // //              .append_chars($loc_txt,"left",13," ")."\r\n";  
-            // // $print_str .= append_chars("","right",23," ").append_chars("-----------","left",13," ")."\r\n";                         
-            // // $print_str .= append_chars(substrwords('VOID SALES',18,""),"right",23," ")
-            // //              .append_chars(numInt(($void)),"left",13," ")."\r\n";
-
-            
-
-            $print_str .= "\r\n";
-            #TRANS COUNT
-                $types = $trans['types']; 
-                $types_total = array();
-                $guestCount = 0;
-                foreach ($types as $type => $tp) {
-                    foreach ($tp as $id => $opt){
-                        if(isset($types_total[$type])){
-                            $types_total[$type] += $opt->total_amount;
-                        
-                        }
-                        else{
-                            $types_total[$type] = $opt->total_amount;
-                        }
-                        if($opt->guest == 0)
-                            $guestCount += 1;
-                        else
-                            $guestCount += $opt->guest;
-                    }    
-                }
-                $print_str .= append_chars(substrwords('Trans Count:',18,""),"right",18," ").align_center('',5," ")
-                             .append_chars('',"left",13," ")."\r\n";
-                $tc_total  = 0;
-                $tc_qty = 0;
-                foreach ($types_total as $typ => $tamnt) {
-                    $print_str .= append_chars(substrwords($typ,18,""),"right",18," ").align_center(count($types[$typ]),5," ")
-                                 .append_chars(numInt($tamnt),"left",13," ")."\r\n";             
-                    $tc_total += $tamnt; 
-                    $tc_qty += count($types[$typ]);
-                }
-                $print_str .= "-----------------"."\r\n";
-                $print_str .= append_chars(substrwords('TC Total',18,""),"right",23," ")
-                             .append_chars(numInt($tc_total),"left",13," ")."\r\n";
-                $print_str .= append_chars(substrwords('GUEST Total',18,""),"right",23," ")
-                             .append_chars(numInt($guestCount),"left",13," ")."\r\n";
-                if($tc_total == 0 || $tc_qty == 0)
-                    $avg = 0;
-                else
-                    $avg = $tc_total/$tc_qty;             
-                $print_str .= append_chars(substrwords('AVG Check',18,""),"right",23," ")
-                             .append_chars(numInt($avg),"left",13," ")."\r\n"; 
-            $print_str .= "\r\n";
-            #CHARGES
-                $types = $trans_charges['types'];
-                $qty = 0;
-                $print_str .= append_chars(substrwords('Charges:',18,""),"right",18," ").align_center(null,5," ")
-                              .append_chars(null,"left",13," ")."\r\n"; 
-                foreach ($types as $code => $val) {
-                    $print_str .= append_chars(substrwords(ucwords(strtolower($val['name'])),18,""),"right",18," ").align_center($val['qty'],5," ")
-                                  .append_chars(numInt($val['amount']),"left",13," ")."\r\n";
-                    $qty += $val['qty'];
-                }
-                $print_str .= "-----------------"."\r\n";
-                $print_str .= append_chars(substrwords('Total Charges',18,""),"right",18," ").align_center($qty,5," ")
-                              .append_chars(numInt($charges),"left",13," ")."\r\n"; 
-            $print_str .= "\r\n";
-            #Discounts
-                $types = $trans_discounts['types'];
-                $qty = 0;
-                $print_str .= append_chars(substrwords('Discounts:',18,""),"right",18," ").align_center(null,5," ")
-                              .append_chars(null,"left",13," ")."\r\n"; 
-                foreach ($types as $code => $val) {
-                    $print_str .= append_chars(substrwords(ucwords(strtolower($val['name'])),18,""),"right",18," ").align_center($val['qty'],5," ")
-                                  .append_chars(numInt($val['amount']),"left",13," ")."\r\n";
-                    $qty += $val['qty'];
-                }
-                $print_str .= "-----------------"."\r\n";
-                $print_str .= append_chars(substrwords('Total Discounts',18,""),"right",18," ").align_center($qty,5," ")
-                              .append_chars(numInt($discounts),"left",13," ")."\r\n"; 
-                $print_str .= append_chars(substrwords('VAT EXEMPT',18,""),"right",23," ")
-                                         .append_chars(numInt($less_vat),"left",13," ")."\r\n";                
-            $print_str .= "\r\n";
-            #PAYMENTS
-                $payments_types = $payments['types'];
-                $payments_total = $payments['total'];
-                $pay_qty = 0;
-                $print_str .= append_chars(substrwords('Payment Breakdown:',18,""),"right",18," ").align_center(null,5," ")
-                              .append_chars(null,"left",13," ")."\r\n"; 
-                foreach ($payments_types as $code => $val) {
-                    $print_str .= append_chars(substrwords(ucwords(strtolower($code)),18,""),"right",18," ").align_center($val['qty'],5," ")
-                                  .append_chars(numInt($val['amount']),"left",13," ")."\r\n";
-                    $pay_qty += $val['qty'];
-                }
-                $print_str .= "-----------------"."\r\n";
-                $print_str .= append_chars(substrwords('Total Payments',18,""),"right",18," ").align_center($pay_qty,5," ")
-                              .append_chars(numInt($payments_total),"left",13," ")."\r\n"; 
-            $print_str .= "\r\n";
-            #CATEGORIES
-                $cats = $trans_menus['cats'];                 
-                $print_str .= append_chars('Menu Categories:',"right",18," ").align_center('',5," ")
-                             .append_chars('',"left",13," ")."\r\n";
-                $qty = 0;
-                $total = 0;
-                foreach ($cats as $id => $val) {
-                    $print_str .= append_chars(substrwords($val['name'],18,""),"right",18," ").align_center($val['qty'],5," ")
-                               .append_chars(numInt($val['amount']),"left",13," ")."\r\n";
-                    $qty += $val['qty'];
-                    $total += $val['amount'];
-                 }             
-                $print_str .= "-----------------"."\r\n";
-                $print_str .= append_chars("SubTotal","right",18," ").align_center($qty,5," ")
-                              .append_chars(numInt($total),"left",13," ")."\r\n";
-                $print_str .= append_chars("Modifiers Total","right",18," ").align_center('',5," ")
-                              .append_chars(numInt($trans_menus['mods_total']),"left",13," ")."\r\n";
-                $print_str .= append_chars("Total","right",18," ").align_center('',5," ")
-                              .append_chars(numInt($total+$trans_menus['mods_total']),"left",13," ")."\r\n";                            
-            $print_str .= "\r\n";                  
-            #SUBCATEGORIES
-                $subcats = $trans_menus['sub_cats'];                 
-                $print_str .= append_chars('Menu Subcategories:',"right",18," ").align_center('',5," ")
-                             .append_chars('',"left",13," ")."\r\n";
-                $qty = 0;
-                $total = 0;
-                foreach ($subcats as $id => $val) {
-                    $print_str .= append_chars($val['name'],"right",18," ").align_center($val['qty'],5," ")
-                               .append_chars(numInt($val['amount']),"left",13," ")."\r\n";
-                    $qty += $val['qty'];
-                    $total += $val['amount'];
-                 }             
-                $print_str .= "-----------------"."\r\n";
-                $print_str .= append_chars("SubTotal","right",18," ").align_center($qty,5," ")
-                              .append_chars(numInt($total),"left",13," ")."\r\n";
-                $print_str .= append_chars("Modifiers Total","right",18," ").align_center('',5," ")
-                              .append_chars(numInt($trans_menus['mods_total']),"left",13," ")."\r\n";
-                $print_str .= append_chars("Total","right",18," ").align_center('',5," ")
-                              .append_chars(numInt($total+$trans_menus['mods_total']),"left",13," ")."\r\n";               
-
-
-            // $print_str .= "\r\n";
-            // $print_str .= "======================================"."\r\n";
-            // $print_str .= append_chars(substrwords('VATABLE SALES',18,""),"right",23," ")
-            //              .append_chars(numInt(($taxable)),"left",13," ")."\r\n";
-            // $print_str .= append_chars(substrwords('VAT EXEMPT SALES',18,""),"right",23," ")
-            //              .append_chars(numInt(($nontaxable)),"left",13," ")."\r\n";
-            // $print_str .= append_chars(substrwords('ZERO RATED',13,""),"right",23," ")
-            //              .append_chars(numInt(($zero_rated)),"left",13," ")."\r\n";
-            // $print_str .= append_chars("","right",23," ").append_chars("-----------","left",13," ")."\r\n";     
-            // $print_str .= append_chars(substrwords('NET SALES',18,""),"right",23," ")
-            //                          .append_chars(numInt(($nsss)),"left",13," ")."\r\n";                             
-            $print_str .= "\r\n";
-            $print_str .= append_chars(substrwords('Invoice Start: ',18,""),"right",18," ").align_center('',5," ")
-                         .append_chars(iSetObj($trans['first_ref'],'trans_ref'),"left",13," ")."\r\n";
-            $print_str .= append_chars(substrwords('Invoice End: ',18,""),"right",18," ").align_center('',5," ")
-                         .append_chars(iSetObj($trans['last_ref'],'trans_ref'),"left",13," ")."\r\n";    
-            $print_str .= append_chars(substrwords('Invoice Ctr: ',18,""),"right",18," ").align_center('',5," ")
-                         .append_chars($trans['ref_count'],"left",13," ")."\r\n";  
-            if($title_name == "ZREAD"){
-                // $gt = $this->old_grand_total($post['from']);
-                $gt = $this->old_grand_net_total($post['from']);
-                $print_str .= "\r\n";
-                $print_str .= append_chars(substrwords('OLD GT: ',18,""),"right",18," ").align_center('',5," ")
-                             // .append_chars(numInt( $gt['old_grand_total'] - ($charges + $local_tax) ),"left",13," ")."\r\n";    
-                             .append_chars(numInt( $gt['old_grand_total']),"left",13," ")."\r\n";    
-                $print_str .= append_chars(substrwords('NEW GT: ',18,""),"right",18," ").align_center('',5," ")
-                             .append_chars( numInt($gt['old_grand_total']+$net_no_adds)  ,"left",13," ")."\r\n";                  
-                             // .append_chars( numInt($gt['old_grand_total']+$net)  ,"left",13," ")."\r\n";                  
-                             // .append_chars( numInt($gt['old_grand_total']+$gross)  ,"left",13," ")."\r\n";                  
-                $print_str .= append_chars(substrwords('Z READ CTR: ',18,""),"right",18," ").align_center('',5," ")
-                             .append_chars( $gt['ctr'] ,"left",13," ")."\r\n";                  
-            }
-
-            $print_str .= "======================================"."\r\n";
-                                      
-
-
-            $this->do_print($print_str,$asJson);
-        }
-
         public function hourly_sales_rep($asJson=false){
             $print_str = $this->print_header();
             $user = $this->session->userdata('user');
@@ -1940,6 +1493,7 @@ class Prints extends CI_Controller {
             $total = 0;
             $pays = array();
             $ids_used = array();
+            $all_payments = array();
             if(count($ids) > 0){
                 $n_payments=array();
                 if($curr){
@@ -1949,7 +1503,6 @@ class Prints extends CI_Controller {
                 }    
                 $this->db = $this->load->database('main', TRUE);
                 $payments = $this->cashier_model->get_all_trans_sales_payments(null,array("trans_sales_payments.sales_id"=>$ids));
-
                 foreach ($payments as $py) {
                     if(!in_array($py->sales_id, $ids_used)){
                         $ids_used[] = $py->sales_id;
@@ -1966,6 +1519,7 @@ class Prints extends CI_Controller {
                         $pays[$py->payment_type]['amount'] += $amount;
                     }
                     $total += $amount;
+                    $all_payments[] = $py;
                 }
                 if(count($n_payments) > 0){
                     foreach ($n_payments as $py) {
@@ -1982,12 +1536,14 @@ class Prints extends CI_Controller {
                                 $pays[$py->payment_type]['amount'] += $amount;
                             }
                             $total += $amount;
+                            $all_payments[] = $py;
                         }
                     }
                 }
             }
             $ret['total'] = $total;
             $ret['types'] = $pays;
+            $ret['all_pays'] = $all_payments;
 
             return $ret;
         }  

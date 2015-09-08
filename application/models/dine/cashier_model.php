@@ -889,6 +889,7 @@ class Cashier_model extends CI_Model{
 					$this->db->where('tables.tbl_id',$id);
 				}
 			$this->db->order_by('tbl_id desc');
+			$this->db->where('tables.inactive',0);
 			$query = $this->db->get();
 			$result = $query->result();
 		$this->db->trans_complete();

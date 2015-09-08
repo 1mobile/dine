@@ -641,7 +641,7 @@ class Reads extends Prints {
             return array('error'=>$error,'file'=>$filename);
         }
         public function sm_file($read_date=null,$zread_id=null){
-            // $read_date = '2015-08-27 14:07:02';
+            // $read_date = '2015-09-01 07:57:27';
             $print_str = "";
             $args = array();
             $file_flg = null;
@@ -667,14 +667,27 @@ class Reads extends Prints {
                 $file_flg = "Z".date('mdY',strtotime($read_date)).".flg";
             }
             $file_txt = date('mdY',strtotime($read_date)).".txt";
+            $file_txt2 = date('ymd',strtotime($read_date)).".txt";
+            $file_txt3 = date('mdy',strtotime($read_date)).".txt";
+
             $file_csv = date('mdY',strtotime($read_date)).".csv";
+            $file_csv2 = date('ymd',strtotime($read_date)).".csv";
+            $file_csv3 = date('mdy',strtotime($read_date)).".csv";
+
             $year = date('Y',strtotime($read_date));
             $month = date('M',strtotime($read_date));
             if (!file_exists("C:/SM/".$year."/".$month."/")) {   
                 mkdir("C:/SM/".$year."/".$month."/", 0777, true);
             }
+            
             $text = "C:/SM/".$year."/".$month."/".$file_txt;
+            $text2 = "C:/SM/".$year."/".$month."/".$file_txt2;
+            $text3 = "C:/SM/".$year."/".$month."/".$file_txt3;
+
             $csv = "C:/SM/".$year."/".$month."/".$file_csv;
+            $csv2 = "C:/SM/".$year."/".$month."/".$file_csv2;
+            $csv3 = "C:/SM/".$year."/".$month."/".$file_csv3;
+
             $flg = null;
             if($file_flg != null)
                 $flg = "C:/SM/".$year."/".$month."/".$file_flg;
@@ -825,11 +838,12 @@ class Reads extends Prints {
                 // HEADER 1 - 5
                 $print_str = commar($print_str,array($br_code,$tenant_code,$class_code,$trade_code,$outlet_no));
                 // OLD GT AND NEW GT 6 - 7
-                $print_str = commar($print_str,array(numInt($old_gt),numInt($new_gt) ));
+                $print_str = commar($print_str,array(numInt($new_gt),numInt($old_gt) ));
                 // SALES TYPE 8
                 $print_str = commar($print_str,'SM01');
                 // DEPARTMENT SUM 9
-                $print_str = commar($print_str,numInt(0));
+                $dept_sum = ($net + $discounts) - $tax;
+                $print_str = commar($print_str,numInt($dept_sum));
                 // REGULAR DISCOUNT 10
                 $print_str = commar($print_str,numInt($other_disc));
                 // EMPLOYEE DISCOUNT 11
@@ -875,7 +889,7 @@ class Reads extends Prints {
                     ##DEBIT SALES
                          $print_str = commar($print_str,numInt($cards['debit']));        
                     ##OTHER SALES
-                         $print_str = commar($print_str,numInt($other_pay_sales));        
+                         $print_str = commar($print_str,numInt($other_pay_sales));     
                     ##MASTER CARD SALES
                          $print_str = commar($print_str,numInt($cards['Master Card']));        
                     ##VISA SALES
@@ -952,10 +966,23 @@ class Reads extends Prints {
             $fp = fopen($text, "w+");
             fwrite($fp,$print_str);
             fclose($fp);
+            $fp = fopen($text2, "w+");
+            fwrite($fp,$print_str);
+            fclose($fp);
+            $fp = fopen($text3, "w+");
+            fwrite($fp,$print_str);
+            fclose($fp);
 
             $fp = fopen($csv, "w+");
             fwrite($fp,$print_str);
             fclose($fp);
+            $fp = fopen($csv2, "w+");
+            fwrite($fp,$print_str);
+            fclose($fp);
+            $fp = fopen($csv3, "w+");
+            fwrite($fp,$print_str);
+            fclose($fp);
+
             if($flg != null){
                 $fp = fopen($flg, "w+");
                 fwrite($fp,$print_str);

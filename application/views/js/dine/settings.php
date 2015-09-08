@@ -12,6 +12,7 @@ $(document).ready(function(){
 				$('#change-img').html('<i class="fa fa-picture-o"></i> Change Image');
 				bootbox.hideAll();
 				displayImage();
+				location.reload();
 			}
 		});
 		function displayImage(){

@@ -82,14 +82,16 @@ function drawerMain($overAllTotal=0){
 												$CI->make->sDivRow(array('style'=>'margin:0;margin-top:0px;'));
 													$buttons = array(
 														 "credit"	=> fa('fa-credit-card fa-lg fa-fw')." Credit Card<br><span class='amt'>0.00</span>",
-														 "gift"		=> fa('fa-gift fa-lg fa-fw')." Gift Cards<br><span class='amt'>0.00</span>",
 														 "debit"	=> fa('fa-credit-card fa-lg fa-fw')." Debit Card<br><span class='amt'>0.00</span>",
+														 "gift"		=> fa('fa-gift fa-lg fa-fw')." Gift Cards<br><span class='amt'>0.00</span>",
 														 "coupon"	=> fa('fa-gift fa-lg fa-fw')." Coupon<br><span class='amt'>0.00</span>",
+														 "smac"	=> fa('fa-credit-card fa-lg fa-fw')." SMAC<br><span class='amt'>0.00</span>",
+														 "eplus"	=> fa('fa-credit-card fa-lg fa-fw')." E-Plus<br><span class='amt'>0.00</span>",
 														 // "chit"		=> fa('fa-tag fa-lg fa-fw')." Sign Chit<br><span class='amt'>0.00</span>",
 														 // "cash"		=> fa('fa-money fa-lg fa-fw')." Cash <br> <span class='amt'>0.00</span>",
 														 // "debit"	=> fa('fa-credit-card fa-lg fa-fw')." Debit Card<br><span class='amt'>0.00</span>",
 													);
-													$CI->make->sDivCol(4,'left',0,array("style"=>'padding:0px;margin-right:0px;'));
+													$CI->make->sDivCol(6,'left',0,array("style"=>'padding:0px;margin-right:0px;'));
 														$CI->make->sDivRow();
 															$CI->make->sDivCol(8,'left',0,array('style'=>'padding-right:0px;'));
 																$CI->make->button(fa('fa-money fa-lg fa-fw')." Cash <br> <span class='amt'>0.00</span>",array('ref'=>'cash','class'=>'cash-only count-type-btn btn-block manager-btn-teal double'));
@@ -102,7 +104,7 @@ function drawerMain($overAllTotal=0){
 														$CI->make->eDiv();
 													$CI->make->eDivCol();
 													foreach ($buttons as $id => $text) {
-														$CI->make->sDivCol(2,'left',0,array("style"=>'padding:0px;margin-right:0px;'));
+														$CI->make->sDivCol(3,'left',0,array("style"=>'padding:0px;margin-right:0px;'));
 															$CI->make->button($text,array('ref'=>$id,'class'=>'count-type-btn btn-block manager-btn-teal double'));
 															$CI->make->sDiv(array('id'=>$id.'-list','class'=>'listings','style'=>'height:280px;background-color:#fff;border:solid 1px #ddd'));
 															$CI->make->eDiv();

@@ -454,6 +454,7 @@ class Settings extends CI_Controller {
         $data['add_css'] = 'css/rtag.css';
         $data['load_js'] = 'dine/settings.php';
         $data['use_js'] =  'seatingJs';
+        $data['sideBarHide'] = true;
         $this->load->view('page',$data);
     }
     public function upload_image_seat_form(){
@@ -466,6 +467,7 @@ class Settings extends CI_Controller {
         $data['code'] = makeTableUploadForm($branch);
         $data['load_js'] = 'dine/settings.php';
         $data['use_js'] = 'uploadImageSeatJs';
+
         $this->load->view('load',$data);
     }
     public function upload_image_seat_db(){
@@ -491,13 +493,14 @@ class Settings extends CI_Controller {
                 // $id = 1;
                 $msg = "Image Uploaded";
                 $src = $target;
+                site_alert($msg,'success');
             }
             else{
                 $mg = "Something went wrong.";
                 $upload = "fail";
+                site_alert($msg,'error');
             }
         }
-
         echo json_encode(array("msg"=>$msg,"src"=>$src) );
     }
     public function get_tables($asJson=true){
